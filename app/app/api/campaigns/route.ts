@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-const PACKAGES = ['START', 'SCALE'] as const
+const PACKAGES = ['START', 'SCALE', 'PREMIUM'] as const
 
 interface CampaignPayload {
   name?: string

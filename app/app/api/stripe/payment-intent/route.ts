@@ -11,8 +11,9 @@ const PLATFORM_COMMISSION_PERCENT = 15;
 
 // Pakiet → cena w groszach
 const PACKAGE_PRICES: Record<string, number> = {
-  START: 280000,  // 2800 PLN
-  SCALE: 1750000, // 17500 PLN
+  START: 280000,   // 2 800 PLN
+  SCALE: 1750000,  // 17 500 PLN
+  PREMIUM: 3300000, // 33 000 PLN
 };
 
 function isValidUuid(value: string): boolean {

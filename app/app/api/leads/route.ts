@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { checkLeadsRateLimit } from '@/lib/rate-limit';
 
 interface LeadPayload {
   email: string;
@@ -16,31 +17,8 @@ interface LeadPayload {
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_STR_LEN = 200;
 
-// Rate limiting: max 5 requests per IP per hour
-const RATE_LIMIT_MAX = 5;
-const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-
 function getRateLimitKey(req: NextRequest): string {
-  return req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown';
-}
-
-function checkRateLimit(key: string): boolean {
-  const now = Date.now();
-  const entry = rateLimitMap.get(key);
-
-  if (!entry || now > entry.resetAt) {
-    // Reset window
-    rateLimitMap.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return true;
-  }
-
-  if (entry.count >= RATE_LIMIT_MAX) {
-    return false;
-  }
-
-  entry.count++;
-  return true;
+  return req.headers.get('cf-connecting-ip') || req.headers.get('x-forwarded-for') || 'unknown';
 }
 
 function clampInt(value: unknown, min: number, max: number): number | null {
@@ -52,9 +30,10 @@ function clampInt(value: unknown, min: number, max: number): number | null {
 }
 
 export async function POST(req: NextRequest) {
-  // Rate limiting check
+  // Rate limiting check (rozproszony przez Upstash, fallback in-memory)
   const clientIp = getRateLimitKey(req);
-  if (!checkRateLimit(clientIp)) {
+  const { success } = await checkLeadsRateLimit(clientIp);
+  if (!success) {
     return NextResponse.json(
       { error: 'Too many requests. Please try again later.' },
       { status: 429, headers: { 'Retry-After': '3600' } }

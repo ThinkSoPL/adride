@@ -12,6 +12,7 @@ const DISTRICTS = [
 const PACKAGES = [
   { id: 'START', name: 'START', desc: 'Pakiet startowy — 3 pojazdy, jedna dzielnica', price: '2 800 zł / mc' },
   { id: 'SCALE', name: 'SCALE', desc: 'Pakiet skalowania — 7+ pojazdów, premium targetowanie', price: 'od 17 500 zł / mc' },
+  { id: 'PREMIUM', name: 'PREMIUM', desc: 'Pakiet miejski — 15+ pojazdów, pełne pokrycie miasta', price: 'od 33 000 zł / mc' },
 ]
 
 export default function NewCampaignPage() {
