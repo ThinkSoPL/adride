@@ -24,35 +24,43 @@ export default function RegisterPage() {
     setLoading(true)
     setError('')
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-          phone,
-          role,
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            phone,
+            role,
+          },
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
         },
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
-      },
-    })
+      })
 
-    if (error) {
-      setError(error.message)
+      if (error) {
+        const SUPABASE_ERRORS: Record<string, string> = {
+          'User already registered': 'Konto z tym emailem już istnieje.',
+          'Password should be at least 6 characters': 'Hasło musi mieć co najmniej 8 znaków.',
+          'Unable to validate email address: invalid format': 'Podaj poprawny adres email.',
+        }
+        setError(SUPABASE_ERRORS[error.message] ?? 'Wystąpił błąd rejestracji. Spróbuj ponownie.')
+        setLoading(false)
+        return
+      }
+
+      if (!data.session) {
+        setConfirmEmail(true)
+        setLoading(false)
+        return
+      }
+
+      router.push('/dashboard')
+      router.refresh()
+    } catch {
+      setError('Błąd połączenia. Sprawdź internet i spróbuj ponownie.')
       setLoading(false)
-      return
     }
-
-    // Jeśli email confirmation jest włączone, brak aktywnej sesji.
-    if (!data.session) {
-      setConfirmEmail(true)
-      setLoading(false)
-      return
-    }
-
-    // Sesja aktywna → przejdź do onboardingu (dashboard wykryje brak danych roli)
-    router.push('/dashboard')
-    router.refresh()
   }
 
   if (confirmEmail) {

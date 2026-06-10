@@ -25,26 +25,31 @@ export default function AdvertiserOnboardingPage() {
     setLoading(true)
     setError('')
 
-    const res = await fetch('/api/onboarding/advertiser', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        company_name: companyName,
-        vat_id: vatId,
-        industry,
-        billing_address: { street, postal_code: postalCode, city: billingCity, country: 'PL' },
-      }),
-    })
+    try {
+      const res = await fetch('/api/onboarding/advertiser', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          company_name: companyName,
+          vat_id: vatId,
+          industry,
+          billing_address: { street, postal_code: postalCode, city: billingCity, country: 'PL' },
+        }),
+      })
 
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}))
-      setError(data.error || 'Wystąpił błąd. Spróbuj ponownie.')
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error || 'Wystąpił błąd. Spróbuj ponownie.')
+        setLoading(false)
+        return
+      }
+
+      router.push('/dashboard/advertiser')
+      router.refresh()
+    } catch {
+      setError('Błąd połączenia. Sprawdź internet i spróbuj ponownie.')
       setLoading(false)
-      return
     }
-
-    router.push('/dashboard/advertiser')
-    router.refresh()
   }
 
   return (

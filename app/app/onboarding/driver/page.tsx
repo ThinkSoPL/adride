@@ -21,31 +21,36 @@ export default function DriverOnboardingPage() {
     setLoading(true)
     setError('')
 
-    const res = await fetch('/api/onboarding/driver', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        city,
-        vehicle: {
-          registration_plate: plate.toUpperCase().replace(/\s/g, ''),
-          make,
-          model,
-          year: year ? parseInt(year, 10) : null,
-          color,
-          mileage_monthly_estimate: mileage ? parseInt(mileage, 10) : null,
-        },
-      }),
-    })
+    try {
+      const res = await fetch('/api/onboarding/driver', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          city,
+          vehicle: {
+            registration_plate: plate.toUpperCase().replace(/\s/g, ''),
+            make,
+            model,
+            year: year ? parseInt(year, 10) : null,
+            color,
+            mileage_monthly_estimate: mileage ? parseInt(mileage, 10) : null,
+          },
+        }),
+      })
 
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}))
-      setError(data.error || 'Wystąpił błąd. Spróbuj ponownie.')
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error || 'Wystąpił błąd. Spróbuj ponownie.')
+        setLoading(false)
+        return
+      }
+
+      router.push('/dashboard/driver')
+      router.refresh()
+    } catch {
+      setError('Błąd połączenia. Sprawdź internet i spróbuj ponownie.')
       setLoading(false)
-      return
     }
-
-    router.push('/dashboard/driver')
-    router.refresh()
   }
 
   return (

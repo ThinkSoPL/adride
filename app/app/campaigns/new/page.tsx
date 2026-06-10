@@ -34,27 +34,32 @@ export default function NewCampaignPage() {
     setLoading(true)
     setError('')
 
-    const res = await fetch('/api/campaigns', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name,
-        package: pkg,
-        start_date: startDate || null,
-        min_km_per_vehicle_monthly: parseInt(minKm, 10) || 1500,
-        target_districts: districts,
-      }),
-    })
+    try {
+      const res = await fetch('/api/campaigns', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          package: pkg,
+          start_date: startDate || null,
+          min_km_per_vehicle_monthly: parseInt(minKm, 10) || 1500,
+          target_districts: districts,
+        }),
+      })
 
-    const data = await res.json().catch(() => ({}))
-    if (!res.ok) {
-      setError(data.error || 'Wystąpił błąd.')
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setError(data.error || 'Wystąpił błąd.')
+        setLoading(false)
+        return
+      }
+
+      router.push(`/campaign/${data.id}`)
+      router.refresh()
+    } catch {
+      setError('Błąd połączenia. Sprawdź internet i spróbuj ponownie.')
       setLoading(false)
-      return
     }
-
-    router.push(`/campaign/${data.id}`)
-    router.refresh()
   }
 
   return (
