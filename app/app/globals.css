@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import 'mapbox-gl/dist/mapbox-gl.css';
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #0a0d12;
+  color: #e6edf3;
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Mapbox popup override — dark theme */
+.mapboxgl-popup-content {
+  background: rgba(15, 18, 24, 0.95) !important;
+  color: #e6edf3 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 12px 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.mapboxgl-popup-tip {
+  border-top-color: rgba(15, 18, 24, 0.95) !important;
+  border-bottom-color: rgba(15, 18, 24, 0.95) !important;
+}
+
+.mapboxgl-popup-close-button {
+  color: #9aa4b2 !important;
+  font-size: 18px;
+  padding: 4px 8px;
+}
+
+.mapboxgl-ctrl-group {
+  background: rgba(15, 18, 24, 0.92) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.mapboxgl-ctrl-group button {
+  filter: invert(0.85);
+}
+
+/* WCAG 2.4.7 — keyboard focus rings na wszystkich elementach interaktywnych */
+:focus-visible {
+  outline: 2px solid #f97316;
+  outline-offset: 2px;
+}
