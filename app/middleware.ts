@@ -32,8 +32,8 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
 
-  // Pozwól na publiczne trasy
-  if (PUBLIC_ROUTES.some(route => pathname === route || pathname.startsWith('/api/stripe'))) {
+  // Pozwól na publiczne trasy (dokładne dopasowanie) oraz webhook Stripe (weryfikuje podpis sam)
+  if (PUBLIC_ROUTES.includes(pathname) || pathname === '/api/stripe/webhook') {
     return supabaseResponse
   }
 
