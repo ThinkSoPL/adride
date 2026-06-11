@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { WARSAW_DISTRICTS } from './data/aadt-warsaw';
 import { calculate, type CalculatorInput } from './lib/calculator';
 import { formatPLN } from '@/lib/pricing';
+import { sendToWebhook } from '@/lib/tracking/webhook';
 
 const DEFAULT_INPUT: CalculatorInput = {
   districtIds: ['srodmiescie', 'mokotow'],
@@ -77,6 +78,19 @@ export function ImpressionsForm() {
           impressionsTotal: result.impressionsTotal,
         }),
       });
+      if (res.ok) {
+        sendToWebhook('lead_kalkulator', {
+          email: trimmedEmail,
+          company: company.trim() || null,
+          phone: phone.trim() || null,
+          dzielnice: input.districtIds.join(','),
+          pojazdy: input.numVehicles,
+          km_dziennie: input.kmDailyPerVehicle,
+          miesiace: input.months,
+          wyswietlenia: result.impressionsTotal,
+          pakiet: result.recommendedPackage.name,
+        });
+      }
       setSubmitState(res.ok ? 'success' : 'error');
     } catch {
       setSubmitState('error');

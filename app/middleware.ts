@@ -38,10 +38,15 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse
   }
 
+  // Origin za reverse proxy — nextUrl może mieć host localhost:3000
+  const forwardedHost = request.headers.get('x-forwarded-host')
+  const origin = forwardedHost
+    ? `${request.headers.get('x-forwarded-proto') ?? 'https'}://${forwardedHost}`
+    : request.nextUrl.origin
+
   // Brak sesji → redirect do logowania
   if (!user) {
-    const loginUrl = request.nextUrl.clone()
-    loginUrl.pathname = '/login'
+    const loginUrl = new URL('/login', origin)
     loginUrl.searchParams.set('redirectTo', pathname)
     return NextResponse.redirect(loginUrl)
   }
@@ -55,9 +60,7 @@ export async function middleware(request: NextRequest) {
       .single()
 
     if (!profile || profile.role !== 'admin') {
-      const dashboardUrl = request.nextUrl.clone()
-      dashboardUrl.pathname = '/dashboard'
-      return NextResponse.redirect(dashboardUrl)
+      return NextResponse.redirect(new URL('/dashboard', origin))
     }
   }
 

@@ -46,3 +46,4 @@ notte-tests/dist/
 notte-tests/.auth/
 notte-tests/test-results/
 notte-tests/playwright-report/
+app/superbase.env

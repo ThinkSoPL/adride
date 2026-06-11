@@ -14,17 +14,21 @@ const NAV: Record<UserRole, NavItem[]> = {
     { href: '/dashboard/driver', label: 'Pulpit', icon: '📊' },
     { href: '/dashboard/driver#vehicles', label: 'Moje pojazdy', icon: '🚗' },
     { href: '/dashboard/driver#earnings', label: 'Zarobki', icon: '💰' },
+    { href: '/dashboard/account', label: 'Konto', icon: '⚙️' },
   ],
   advertiser: [
     { href: '/dashboard/advertiser', label: 'Pulpit', icon: '📊' },
     { href: '/dashboard/advertiser#campaigns', label: 'Kampanie', icon: '📢' },
     { href: '/dashboard/advertiser/drivers', label: 'Kierowcy', icon: '🚗' },
     { href: '/kalkulator', label: 'Kalkulator', icon: '🧮' },
+    { href: '/dashboard/account', label: 'Konto', icon: '⚙️' },
   ],
   admin: [
     { href: '/admin', label: 'Pulpit', icon: '📊' },
-    { href: '/admin#drivers', label: 'Kierowcy', icon: '🚗' },
+    { href: '/admin#all-drivers', label: 'Kierowcy', icon: '🚗' },
     { href: '/admin#campaigns', label: 'Kampanie', icon: '📢' },
+    { href: '/admin#firms', label: 'Firmy', icon: '🏢' },
+    { href: '/dashboard/account', label: 'Konto', icon: '⚙️' },
   ],
 }
 
