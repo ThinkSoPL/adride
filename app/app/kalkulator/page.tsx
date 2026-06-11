@@ -40,7 +40,7 @@ export default function KalkulatorPage() {
 
           <p className="text-[#718096] text-lg max-w-2xl leading-relaxed">
             Sprawdź, ile osób zobaczy Twoją reklamę na samochodach w Warszawie.
-            Ustaw dzielnicę, flotę i budżet — wynik pojawia się od razu.
+            Wybierz dzielnice, flotę i czas kampanii — wynik pojawia się od razu.
           </p>
         </div>
 
