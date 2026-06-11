@@ -47,7 +47,8 @@ export function filterOutlier(
   if (timeDeltaMs <= 0) return false;
 
   const distanceM = haversineDistance(prev, current);
-  const speedKmh = (distanceM / timeDeltaMs) * 3_600_000; // ms → h
+  // m/ms → km/h: (m / ms) × 3600  (1 m/ms = 1000 m/s = 3600 km/h)
+  const speedKmh = (distanceM / timeDeltaMs) * 3_600;
 
   return speedKmh > MAX_SPEED_KMH;
 }
@@ -64,10 +65,12 @@ export function cumulativeDistance(points: ReadonlyArray<GpsPoint>): number {
 
   for (let i = 1; i < points.length; i++) {
     const current = points[i]!;
-    if (!filterOutlier(prev, current)) {
-      total += haversineDistance(prev, current);
+    if (filterOutlier(prev, current)) {
+      // Outlier (skok GPS) — pomiń punkt i NIE przesuwaj kotwicy.
+      // Następny punkt liczymy od ostatniego WAŻNEGO punktu, nie od skoku.
+      continue;
     }
-    // Aktualizuj prev nawet jeśli odrzucono — następny punkt liczymy od last valid
+    total += haversineDistance(prev, current);
     prev = current;
   }
 
@@ -86,5 +89,6 @@ export function instantSpeedKmh(
   if (timeDeltaMs <= 0) return null;
 
   const distanceM = haversineDistance(prev, current);
-  return (distanceM / timeDeltaMs) * 3_600_000;
+  // m/ms → km/h: (m / ms) × 3600  (1 m/ms = 1000 m/s = 3600 km/h)
+  return (distanceM / timeDeltaMs) * 3_600;
 }
