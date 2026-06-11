@@ -1,7 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_ROUTES = ['/', '/login', '/register', '/auth/callback', '/kalkulator', '/api/stripe/webhook', '/api/leads']
+const PUBLIC_ROUTES = ['/', '/login', '/register', '/auth/callback', '/kalkulator', '/flota', '/forgot-password', '/update-password', '/api/stripe/webhook', '/api/leads', '/api/onboarding/driver', '/api/onboarding/advertiser']
+const PUBLIC_PREFIXES = ['/onboarding']
 const ADMIN_ROUTES = ['/admin']
 
 export async function middleware(request: NextRequest) {
@@ -33,7 +34,7 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
   // Pozwól na publiczne trasy (dokładne dopasowanie) oraz webhook Stripe (weryfikuje podpis sam)
-  if (PUBLIC_ROUTES.includes(pathname) || pathname === '/api/stripe/webhook') {
+  if (PUBLIC_ROUTES.includes(pathname) || pathname === '/api/stripe/webhook' || PUBLIC_PREFIXES.some(p => pathname.startsWith(p))) {
     return supabaseResponse
   }
 
