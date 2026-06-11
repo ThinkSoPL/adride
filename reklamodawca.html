@@ -63,6 +63,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <a href="#kalkulator">Kalkulator</a>
     </div>
     <div class="nav-cta">
+      <a href="https://app.adride.pl/login" class="nav-login" style="font-size:14px;color:var(--ink-2);text-decoration:none;padding:8px 6px">Zaloguj</a>
       <a href="kierowca.html" class="btn btn-ghost" style="font-size:14px;padding:8px 14px">Dla kierowców</a>
       <a href="#kontakt" class="btn btn-amber" style="font-size:14px;padding:8px 14px">Zacznij kampanię</a>
     </div>
@@ -174,9 +175,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="calc-row">
         <label>Czas kampanii</label>
         <select id="calc-months">
-          <option value="3">3 miesiące (pakiet START)</option>
-          <option value="6" selected>6 miesięcy (pakiet SCALE)</option>
-          <option value="12">12 miesięcy</option>
+          <option value="3">3 miesiące (pakiet Dzielnica)</option>
+          <option value="6" selected>6 miesięcy (pakiet Metro)</option>
+          <option value="12">12 miesięcy (pakiet Miasto)</option>
         </select>
       </div>
 
@@ -208,41 +209,57 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <div class="pricing-grid">
     <div class="price-card">
-      <div class="pname">Pakiet START</div>
+      <div class="pname">Dzielnica</div>
       <div class="ptag">Pierwsza kampania GPS</div>
       <div class="price">
-        <span>997</span><span class="cur">zł</span><span class="unit">/ mies.</span>
+        <span>2 800</span><span class="cur">zł</span><span class="unit">/ mies.</span>
       </div>
-      <div style="font-family:var(--font-mono);font-size:12px;color:var(--ink-3)">+ 497 zł oklejenie · + 197 zł demontaż · min. 3 miesiące</div>
+      <div style="font-family:var(--font-mono);font-size:12px;color:var(--ink-3)">3 pojazdy · 1 dzielnica · min. 3 miesiące</div>
       <ul>
-        <li>Oklejenie 1 pojazdu w wybranej dzielnicy</li>
-        <li>Kampania GPS przez 3 miesiące</li>
+        <li>Oklejenie 3 pojazdów w wybranej dzielnicy</li>
+        <li>Rozliczenie za faktyczne km z GPS</li>
         <li>Panel reklamodawcy online</li>
         <li>Raport końcowy z mapą tras GPS</li>
-        <li>Gwarancja 1 500 km / pojazd / mies.</li>
+        <li>Oklejenie i demontaż rozliczane osobno</li>
         <li>Start w 7 dni roboczych</li>
       </ul>
-      <a href="#kontakt" class="btn btn-ghost">Zarezerwuj pojazd →</a>
+      <a href="#kontakt" class="btn btn-ghost">Zarezerwuj pojazdy →</a>
     </div>
 
     <div class="price-card featured">
       <div class="badge">Polecany</div>
-      <div class="pname">Pakiet SCALE</div>
+      <div class="pname">Metro</div>
       <div class="ptag">Kampania flotowa GPS</div>
       <div class="price">
-        <span>2 497</span><span class="cur">zł</span><span class="unit">/ mies.</span>
+        <span>17 500</span><span class="cur">zł</span><span class="unit">/ mies.</span>
       </div>
-      <div style="font-family:var(--font-mono);font-size:12px;color:var(--ink-3)">+ 997 zł oklejenie · + 397 zł demontaż · min. 6 miesięcy</div>
+      <div style="font-family:var(--font-mono);font-size:12px;color:var(--ink-3)">7 pojazdów · kilka dzielnic · min. 6 miesięcy</div>
       <ul>
-        <li>Oklejenie 3–5 pojazdów w wybranych dzielnicach</li>
-        <li>Kampania GPS przez 6 miesięcy</li>
+        <li>Oklejenie 7 pojazdów w wybranych dzielnicach</li>
+        <li>Rozliczenie za faktyczne km z GPS</li>
         <li>Targetowanie geograficzne — wybór dzielnic</li>
         <li>Dedykowany opiekun kampanii</li>
         <li>Raport tygodniowy z danych GPS</li>
-        <li>Gwarancja 6 000 km / mies. lub przedłużenie</li>
         <li>Pierwsza wymiana folii gratis</li>
       </ul>
       <a href="#kontakt" class="btn btn-amber">Zarezerwuj flotę →</a>
+    </div>
+
+    <div class="price-card">
+      <div class="pname">Miasto</div>
+      <div class="ptag">Pełne pokrycie — oklejenie wliczone</div>
+      <div class="price">
+        <span>33 000</span><span class="cur">zł</span><span class="unit">/ mies.</span>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:12px;color:var(--ink-3)">15+ pojazdów · całe miasto · min. 12 miesięcy</div>
+      <ul>
+        <li>Oklejenie 15+ pojazdów, pełne miasto</li>
+        <li>Oklejenie i demontaż wliczone w cenę</li>
+        <li>Pełne targetowanie + priorytet floty</li>
+        <li>Dedykowany zespół + integracje API</li>
+        <li>Raport dzienny + kwartalny przegląd</li>
+      </ul>
+      <a href="#kontakt" class="btn btn-ghost">Zapytaj o Miasto →</a>
     </div>
   </div>
 
@@ -324,8 +341,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="form-group">
           <label for="ad-package">Interesujący pakiet</label>
           <select id="ad-package" name="package">
-            <option value="start">START — 997 zł netto / mies.</option>
-            <option value="scale">SCALE — 2 497 zł netto / mies.</option>
+            <option value="start">Dzielnica — 2 800 zł netto / mies.</option>
+            <option value="scale">Metro — 17 500 zł netto / mies.</option>
+            <option value="premium">Miasto — 33 000 zł netto / mies.</option>
             <option value="unknown">Nie wiem jeszcze — doradźcie</option>
           </select>
         </div>

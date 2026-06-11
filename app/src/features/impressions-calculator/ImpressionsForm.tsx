@@ -3,22 +3,23 @@
 import { useMemo, useState } from 'react';
 import { WARSAW_DISTRICTS } from './data/aadt-warsaw';
 import { calculate, type CalculatorInput } from './lib/calculator';
+import { formatPLN } from '@/lib/pricing';
 
 const DEFAULT_INPUT: CalculatorInput = {
-  districtId: 'srodmiescie',
+  districtIds: ['srodmiescie', 'mokotow'],
   numVehicles: 5,
-  kmDailyPerVehicle: 150,
-  months: 3,
-  budgetMonthlyPLN: null,
+  kmDailyPerVehicle: 100,
+  months: 6,
 };
-
-const MONTH_OPTIONS = [1, 3, 6, 12] as const;
 
 function fmt(n: number): string {
   return n.toLocaleString('pl-PL');
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Wszystkie dzielnice + skrót „cała Warszawa"
+const ALL_DISTRICT_IDS = WARSAW_DISTRICTS.map(d => d.id);
 
 export function ImpressionsForm() {
   const [input, setInput] = useState<CalculatorInput>(DEFAULT_INPUT);
@@ -30,18 +31,33 @@ export function ImpressionsForm() {
 
   const result = useMemo(() => calculate(input), [input]);
 
+  const allSelected = input.districtIds.length === ALL_DISTRICT_IDS.length;
+
+  function toggleDistrict(id: string) {
+    setInput(p => {
+      const has = p.districtIds.includes(id);
+      const next = has ? p.districtIds.filter(x => x !== id) : [...p.districtIds, id];
+      return { ...p, districtIds: next };
+    });
+  }
+
+  function toggleAll() {
+    setInput(p => ({
+      ...p,
+      districtIds: allSelected ? [] : [...ALL_DISTRICT_IDS],
+    }));
+  }
+
   const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!result || submitState === 'loading') return;
 
-    // Client-side email validation
     const trimmedEmail = email.trim();
     if (!EMAIL_REGEX.test(trimmedEmail)) {
       setEmailError('Podaj poprawny adres email');
       return;
     }
     setEmailError(null);
-
     setSubmitState('loading');
 
     try {
@@ -52,11 +68,12 @@ export function ImpressionsForm() {
           email: trimmedEmail,
           company: company.trim() || null,
           phone: phone.trim() || null,
-          districtId: input.districtId,
+          // API przyjmuje pojedyncze districtId (text, max 64) — łączymy wybrane
+          districtId: input.districtIds.join(',').slice(0, 64),
           numVehicles: input.numVehicles,
           kmDailyPerVehicle: input.kmDailyPerVehicle,
           months: input.months,
-          budgetMonthlyPLN: input.budgetMonthlyPLN,
+          budgetMonthlyPLN: result.recommendedPackage.monthlyPLN,
           impressionsTotal: result.impressionsTotal,
         }),
       });
@@ -74,22 +91,53 @@ export function ImpressionsForm() {
           Parametry kampanii
         </p>
 
-        {/* Dzielnica */}
+        {/* Dzielnice — multi-select */}
         <div>
-          <label className="block text-sm font-medium text-[#A0AEC0] mb-2">
-            Dzielnica Warszawy
-          </label>
-          <select
-            value={input.districtId}
-            onChange={e => setInput(p => ({ ...p, districtId: e.target.value }))}
-            className="w-full bg-[#0A0D12] border border-[#1E2A38] rounded-lg px-4 py-3 text-[#E6EDF3] focus:border-[#FF6B35] focus:outline-none"
-          >
-            {WARSAW_DISTRICTS.map(d => (
-              <option key={d.id} value={d.id}>
-                {d.name}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-sm font-medium text-[#A0AEC0]">
+              Dzielnice Warszawy{' '}
+              <span className="text-[#4A5568] font-normal">
+                ({input.districtIds.length} wybrano)
+              </span>
+            </label>
+            <button
+              type="button"
+              onClick={toggleAll}
+              className="text-xs font-semibold text-[#FF6B35] hover:text-[#FF9A35] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#FF6B35] rounded px-1"
+            >
+              {allSelected ? 'Wyczyść' : 'Cała Warszawa'}
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-1.5 max-h-52 overflow-y-auto pr-1">
+            {WARSAW_DISTRICTS.map(d => {
+              const checked = input.districtIds.includes(d.id);
+              return (
+                <button
+                  key={d.id}
+                  type="button"
+                  onClick={() => toggleDistrict(d.id)}
+                  aria-pressed={checked}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-left border transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#FF6B35] ${
+                    checked
+                      ? 'bg-[#FF6B35]/15 border-[#FF6B35]/50 text-[#E6EDF3]'
+                      : 'bg-[#0A0D12] border-[#1E2A38] text-[#718096] hover:border-[#FF6B35]/40'
+                  }`}
+                >
+                  <span
+                    className={`w-4 h-4 rounded flex items-center justify-center text-[10px] shrink-0 ${
+                      checked ? 'bg-[#FF6B35] text-white' : 'border border-[#4A5568]'
+                    }`}
+                  >
+                    {checked ? '✓' : ''}
+                  </span>
+                  <span className="truncate">{d.name}</span>
+                </button>
+              );
+            })}
+          </div>
+          {input.districtIds.length === 0 && (
+            <p className="text-[#FC8181] text-xs mt-2">Wybierz min. jedną dzielnicę.</p>
+          )}
         </div>
 
         {/* Liczba pojazdów */}
@@ -109,66 +157,39 @@ export function ImpressionsForm() {
           </div>
         </div>
 
-        {/* Km dziennie */}
+        {/* Km dziennie 20–200 */}
         <div>
           <div className="flex justify-between mb-2">
             <label className="text-sm font-medium text-[#A0AEC0]">Km dziennie / pojazd</label>
             <span className="text-sm font-bold text-[#FF6B35]">{input.kmDailyPerVehicle} km</span>
           </div>
           <input
-            type="range" min={30} max={400} step={10}
+            type="range" min={20} max={200} step={5}
             value={input.kmDailyPerVehicle}
             onChange={e => setInput(p => ({ ...p, kmDailyPerVehicle: Number(e.target.value) }))}
             className="w-full accent-[#FF6B35]"
           />
           <div className="flex justify-between text-xs text-[#4A5568] mt-1">
-            <span>30 km</span><span>400 km</span>
+            <span>20 km</span><span>200 km</span>
           </div>
         </div>
 
-        {/* Czas kampanii */}
+        {/* Czas kampanii — suwak 6–24 mies. */}
         <div>
-          <label className="block text-sm font-medium text-[#A0AEC0] mb-2">
-            Czas kampanii
-          </label>
-          <div className="grid grid-cols-4 gap-2">
-            {MONTH_OPTIONS.map(m => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setInput(p => ({ ...p, months: m }))}
-                className={`py-2.5 rounded-lg text-sm font-semibold border transition-colors ${
-                  input.months === m
-                    ? 'bg-[#FF6B35] border-[#FF6B35] text-white'
-                    : 'bg-[#0A0D12] border-[#1E2A38] text-[#718096] hover:border-[#FF6B35] hover:text-[#E6EDF3]'
-                }`}
-              >
-                {m === 12 ? '1 rok' : `${m} mies.`}
-              </button>
-            ))}
+          <div className="flex justify-between mb-2">
+            <label className="text-sm font-medium text-[#A0AEC0]">Czas kampanii</label>
+            <span className="text-sm font-bold text-[#FF6B35]">
+              {input.months} mies.{input.months >= 12 ? ` (${(input.months / 12).toFixed(input.months % 12 === 0 ? 0 : 1)} ${input.months >= 24 ? 'lata' : 'rok'})` : ''}
+            </span>
           </div>
-        </div>
-
-        {/* Budżet (opcjonalny) */}
-        <div>
-          <label className="block text-sm font-medium text-[#A0AEC0] mb-2">
-            Budżet miesięczny{' '}
-            <span className="text-[#4A5568] font-normal">(opcjonalny — do wyliczenia CPM)</span>
-          </label>
-          <div className="relative">
-            <input
-              type="number" min={0} step={100}
-              placeholder="np. 5 000"
-              value={input.budgetMonthlyPLN ?? ''}
-              onChange={e =>
-                setInput(p => ({
-                  ...p,
-                  budgetMonthlyPLN: e.target.value ? Number(e.target.value) : null,
-                }))
-              }
-              className="w-full bg-[#0A0D12] border border-[#1E2A38] rounded-lg px-4 py-3 text-[#E6EDF3] pr-16 focus:border-[#FF6B35] focus:outline-none"
-            />
-            <span className="absolute right-4 top-3.5 text-[#718096] text-sm">PLN</span>
+          <input
+            type="range" min={6} max={24} step={1}
+            value={input.months}
+            onChange={e => setInput(p => ({ ...p, months: Number(e.target.value) }))}
+            className="w-full accent-[#FF6B35]"
+          />
+          <div className="flex justify-between text-xs text-[#4A5568] mt-1">
+            <span>6 mies.</span><span>24 mies.</span>
           </div>
         </div>
       </div>
@@ -181,48 +202,55 @@ export function ImpressionsForm() {
             <div className="bg-[#111720] rounded-2xl border border-[#1E2A38] p-6">
               <div className="flex items-center justify-between mb-6">
                 <p className="text-xs font-bold text-[#4A5568] uppercase tracking-wider">
-                  Szacowany zasięg
+                  Szacowany efekt kampanii
                 </p>
                 <span className="text-xs text-[#4A5568] bg-[#0A0D12] border border-[#1E2A38] px-2.5 py-1 rounded-full">
-                  {result.district.zone}
+                  {result.districts.length === 1 ? result.districts[0]?.name : `${result.districts.length} dzielnic`}
                 </span>
               </div>
 
               <div className="space-y-5">
                 <Stat
-                  label="Impressions dziennie"
-                  value={fmt(result.impressionsDaily)}
-                  sub={`${fmt(result.impressionsPerVehicleDaily)} / pojazd`}
-                />
-                <Stat
-                  label="Impressions miesięcznie"
+                  label="Wyświetlenia miesięcznie"
                   value={fmt(result.impressionsMonthly)}
                   accent
                 />
-                {input.months > 1 && (
-                  <Stat
-                    label={`Łącznie (${input.months} ${input.months === 12 ? 'miesięcy / rok' : 'miesiące'})`}
-                    value={fmt(result.impressionsTotal)}
-                    large
-                    accent
-                  />
-                )}
+                <Stat
+                  label={`Wyświetlenia łącznie (${input.months} mies.)`}
+                  value={fmt(result.impressionsTotal)}
+                  large
+                  accent
+                />
 
-                {result.cpmPLN !== null && (
-                  <div className="pt-5 border-t border-[#1E2A38]">
-                    <Stat
-                      label="CPM (koszt 1 000 wyświetleń)"
-                      value={`${result.cpmPLN.toFixed(2)} zł`}
-                      sub="Benchmark reklamy OOH w Polsce: 2–8 zł CPM"
-                    />
-                  </div>
-                )}
+                {/* Nowe metryki: zapamiętywalność + klienci */}
+                <div className="grid grid-cols-2 gap-4 pt-5 border-t border-[#1E2A38]">
+                  <Stat
+                    label="Wzrost zapamiętywalności marki"
+                    value={`+${result.brandRecallLiftPct}%`}
+                    sub="w obszarze kampanii"
+                  />
+                  <Stat
+                    label="Szacowani nowi klienci"
+                    value={`~${fmt(result.estimatedNewClients)}`}
+                    sub="z ekspozycji kampanii"
+                  />
+                </div>
+
+                <div className="pt-5 border-t border-[#1E2A38]">
+                  <Stat
+                    label={`Średni CPM (pakiet ${result.recommendedPackage.marketingName})`}
+                    value={`${result.cpmPLN.toFixed(2)} zł`}
+                    sub={`Cennik: ${formatPLN(result.recommendedPackage.monthlyPLN)}/mies. · bez kosztów oklejania`}
+                  />
+                </div>
               </div>
             </div>
 
             <p className="text-xs text-[#4A5568] px-1 leading-relaxed">
               Metodologia: dane natężenia ruchu GDDKiA 2023 dla dzielnic Warszawy.
-              Współczynnik widoczności 0,15 (15% pojazdów mija reklamowany samochód w zasięgu wzroku).
+              Współczynnik widoczności 0,15. Zapamiętywalność i liczba klientów to szacunki
+              oparte na unikalnym zasięgu (40% kontaktów) i konserwatywnych współczynnikach
+              recall/konwersji — wartości orientacyjne, nie gwarancja wyniku.
             </p>
 
             {/* Lead capture */}
@@ -298,6 +326,16 @@ export function ImpressionsForm() {
               )}
             </div>
           </>
+        )}
+
+        {!result && (
+          <div className="bg-[#111720] rounded-2xl border border-[#1E2A38] p-8 text-center">
+            <div className="text-3xl mb-3">🗺️</div>
+            <p className="text-[#A0AEC0] font-medium">Wybierz dzielnice</p>
+            <p className="text-sm text-[#4A5568] mt-1">
+              Zaznacz min. jedną dzielnicę, aby zobaczyć szacowany zasięg kampanii.
+            </p>
+          </div>
         )}
       </div>
     </div>

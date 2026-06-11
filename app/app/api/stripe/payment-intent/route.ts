@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createAuthClient } from '@/lib/supabase/server';
 import { createClient } from '@supabase/supabase-js';
 import { toStripeFormBody } from '@/features/stripe/lib/stripe-form';
+import { PACKAGE_PRICES_GROSZE } from '@/lib/pricing';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -9,12 +10,8 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const PLATFORM_COMMISSION_PERCENT = 15;
 
-// Pakiet → cena w groszach
-const PACKAGE_PRICES: Record<string, number> = {
-  START: 280000,   // 2 800 PLN
-  SCALE: 1750000,  // 17 500 PLN
-  PREMIUM: 3300000, // 33 000 PLN
-};
+// Pakiet → cena w groszach (single source of truth: src/lib/pricing.ts)
+const PACKAGE_PRICES: Record<string, number> = PACKAGE_PRICES_GROSZE;
 
 function isValidUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);

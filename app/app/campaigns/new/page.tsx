@@ -3,17 +3,19 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { PACKAGE_LIST, formatPLN } from '@/lib/pricing'
 
 const DISTRICTS = [
   'Śródmieście', 'Mokotów', 'Wola', 'Ursynów', 'Praga-Południe', 'Praga-Północ',
   'Ochota', 'Żoliborz', 'Bielany', 'Bemowo', 'Targówek', 'Wilanów',
 ]
 
-const PACKAGES = [
-  { id: 'START', name: 'START', desc: 'Pakiet startowy — 3 pojazdy, jedna dzielnica', price: '2 800 zł / mc' },
-  { id: 'SCALE', name: 'SCALE', desc: 'Pakiet skalowania — 7+ pojazdów, premium targetowanie', price: 'od 17 500 zł / mc' },
-  { id: 'PREMIUM', name: 'PREMIUM', desc: 'Pakiet miejski — 15+ pojazdów, pełne pokrycie miasta', price: 'od 33 000 zł / mc' },
-]
+const PACKAGES = PACKAGE_LIST.map(p => ({
+  id: p.id,
+  name: p.name,
+  desc: p.desc,
+  price: `${formatPLN(p.monthlyPLN)} / mc`,
+}))
 
 export default function NewCampaignPage() {
   const router = useRouter()

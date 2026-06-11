@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { ImpressionsForm } from '@/features/impressions-calculator/ImpressionsForm';
 
 export const metadata: Metadata = {
@@ -10,6 +11,21 @@ export const metadata: Metadata = {
 export default function KalkulatorPage() {
   return (
     <main className="min-h-screen bg-[#0A0D12] text-[#E6EDF3]">
+      {/* Top bar z logowaniem */}
+      <header className="border-b border-[#1E2A38]">
+        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+          <Link href="/" className="text-xl font-bold">
+            Ad<span className="text-[#FF6B35]">Ride</span>
+          </Link>
+          <Link
+            href="/login"
+            className="text-sm font-medium text-[#A0AEC0] hover:text-[#E6EDF3] border border-[#1E2A38] hover:border-[#FF6B35] px-4 py-2 rounded-lg transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#FF6B35]"
+          >
+            Zaloguj się
+          </Link>
+        </div>
+      </header>
+
       <div className="max-w-5xl mx-auto px-4 py-12">
         <div className="mb-10">
           <div className="inline-flex items-center gap-2 bg-[#FF6B35]/10 border border-[#FF6B35]/20 rounded-full px-4 py-1.5 mb-5">
