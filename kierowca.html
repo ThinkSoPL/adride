@@ -203,13 +203,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <div class="form-box" id="form-wrap">
     <form class="form-stack" id="driver-form" data-testid="login-form">
+      <div class="form-group">
+        <label for="email">Email *</label>
+        <input type="email" id="email" name="email" placeholder="jan@example.com" required>
+      </div>
       <div class="form-grid">
         <div class="form-group">
-          <label for="name">Imię</label>
-          <input type="text" id="name" name="name" placeholder="Jan" required>
+          <label for="company">Nazwa firmy (opcjonalnie)</label>
+          <input type="text" id="company" name="company" placeholder="Moja firma">
         </div>
         <div class="form-group">
-          <label for="phone">Telefon</label>
+          <label for="phone">Telefon *</label>
           <input type="tel" id="phone" name="phone" placeholder="+48 600 000 000" required>
         </div>
       </div>
