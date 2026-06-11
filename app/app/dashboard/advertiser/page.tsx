@@ -47,12 +47,20 @@ export default async function AdvertiserDashboard() {
           <h1 className="text-2xl font-bold mb-1">Pulpit reklamodawcy</h1>
           <p className="text-gray-400">{advertiser.company_name}</p>
         </div>
-        <Link
-          href="/campaigns/new"
-          className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-4 py-2.5 rounded-lg transition whitespace-nowrap"
-        >
-          + Nowa kampania
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href="/dashboard/advertiser/drivers"
+            className="border border-gray-700 hover:border-gray-500 text-gray-200 font-medium px-4 py-2.5 rounded-lg transition whitespace-nowrap"
+          >
+            🚗 Kierowcy
+          </Link>
+          <Link
+            href="/campaigns/new"
+            className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-4 py-2.5 rounded-lg transition whitespace-nowrap"
+          >
+            + Nowa kampania
+          </Link>
+        </div>
       </div>
 
       {/* KPI */}

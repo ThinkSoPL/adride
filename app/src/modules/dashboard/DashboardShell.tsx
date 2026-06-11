@@ -18,6 +18,7 @@ const NAV: Record<UserRole, NavItem[]> = {
   advertiser: [
     { href: '/dashboard/advertiser', label: 'Pulpit', icon: '📊' },
     { href: '/dashboard/advertiser#campaigns', label: 'Kampanie', icon: '📢' },
+    { href: '/dashboard/advertiser/drivers', label: 'Kierowcy', icon: '🚗' },
     { href: '/kalkulator', label: 'Kalkulator', icon: '🧮' },
   ],
   admin: [
