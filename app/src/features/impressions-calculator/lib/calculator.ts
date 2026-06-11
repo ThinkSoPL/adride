@@ -31,15 +31,17 @@ export interface CalculatorResult {
 const VISIBILITY_FACTOR = 0.15;
 const DAYS_PER_MONTH = 30;
 
-// Model zapamiętywalności (heurystyka, jawnie oznaczona jako szacunek):
+// Model zapamiętywalności (heurystyka, jawnie oznaczona jako szacunek).
+// Kalibracja: po 1. pilocie dostosować do realnych danych (tracking brand lift, customer acquisition).
 // unikalny zasięg ≈ 40% wszystkich kontaktów (reszta to powtórne wyświetlenia)
 const UNIQUE_REACH_RATIO = 0.4;
 // Populacja Warszawy (GUS 2023, ~1,86 mln) — baza do wyliczenia % zapamiętywalności
 const WARSAW_POPULATION = 1_860_000;
 // Współczynnik recall: jaka część unikalnego zasięgu zapamiętuje markę
-const RECALL_FACTOR = 0.55;
-// Współczynnik konwersji zapamiętania → klient (bardzo konserwatywny, 0,15%)
-const AWARENESS_TO_CLIENT_RATE = 0.0015;
+// Conservatively: 25% (od billboard'u w mieście, ekspozycja 2-3 sek bez zaangażowania)
+const RECALL_FACTOR = 0.25;
+// Współczynnik konwersji zapamiętanie → klient (0,1% — bardzo konserwatywny, do kalibracji)
+const AWARENESS_TO_CLIENT_RATE = 0.001;
 
 function clamp(v: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, v));
