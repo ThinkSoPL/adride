@@ -157,9 +157,11 @@ sudo tail -f /var/log/nginx/access.log
 
 | Problem | Rozwiązanie |
 |---|---|
+| **521 Web server is down** (Cloudflare) | Nginx nie wstał. `sudo nginx -t` pokaże przyczynę. **Najczęstsza (2026-06-11):** stary plik w `sites-available` (np. `ja-adride-log`) odwołuje się do nieistniejącego certu `ja.adride.pl` → cała konfiguracja nginx pada. Usuń osierocony plik: `rm /etc/nginx/sites-available/ja-adride-log` → `systemctl restart nginx`. Sprawdź czym jest cert: `ls /etc/letsencrypt/live/` (powinien być tylko `app.adride.pl`). |
 | **502 Bad Gateway** | `pm2 logs adride` — zobacz błędy Node'a. Restart: `pm2 restart adride` |
+| **ENOENT prerender-manifest.json** | Build niekompletny lub `.next/` skasowany. `cd /root/adride/app && npm run build && pm2 restart adride` |
 | **Port 3000 zajęty** | `lsof -i :3000` → `kill -9 PID` |
-| **Supabase connection fail** | Sprawdź `.env.production` — czy klucze są aktualne |
+| **Supabase connection fail** | Sprawdź `.env.local` na VPS — czy klucze są aktualne |
 | **Certbot error** | `sudo certbot renew --dry-run` — test auto-renew |
 | **PM2 nie startuje na reboot** | Powtórz: `pm2 startup` + `pm2 save` |
 
@@ -177,21 +179,28 @@ Po deploymencie przejdź do aplikacji i zaloguj się:
 
 ---
 
-## Aktualizacja aplikacji (gdy zmieniłeś kod)
+## Aktualizacja aplikacji (gdy zmieniłeś kod) — REALNY WORKFLOW (git-based)
+
+Na VPS repo jest sklonowane w `/root/adride`, gałąź **`master`** (UWAGA: nie `main` — `main` to stary stub).
+Po `git push origin master` z lokalnej maszyny:
 
 ```bash
-# Lokalnie
-cd app
-npm run build
-
-# Wgraj nowy .next
-scp -r .next/* user@natalia132.mikrus.xyz:/home/user/adride/app/.next/
-
-# Na serwerze
-ssh user@natalia132.mikrus.xyz
-cd /home/user/adride/app
-pm2 restart adride
+ssh root@app.adride.pl
+cd /root/adride && git pull origin master && cd app && npm run build && pm2 restart adride
 ```
+
+**Smoke test po deployu (wszystko w jednej linii):**
+```bash
+sleep 3 && curl -s -X OPTIONS -H "Origin: https://adride.pl" -o /dev/null -w "CORS: %{http_code}\n" http://localhost:3000/api/leads
+# oczekiwane: CORS: 204
+curl -s -o /dev/null -w "HTTPS app.adride.pl: %{http_code}\n" https://app.adride.pl/login
+# oczekiwane: HTTPS app.adride.pl: 200
+```
+
+⚠️ **Jeśli po deployu pojawia się 521** — to nie aplikacja, tylko nginx. Patrz tabela Troubleshooting (osierocony `sites-available/ja-adride-log`).
+
+### Landing (adride.pl — statyczny FTP)
+Po zmianie `index.html` / `js/form.js` / `kierowca.html` / `reklamodawca.html` wgraj je przez FTP (Filezilla/WinSCP) na hosting aftermarket adride.pl. To OSOBNY serwer niż VPS app.adride.pl.
 
 ---
 

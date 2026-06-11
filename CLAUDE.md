@@ -8,9 +8,11 @@ Reklamodawcy płacą per km — nie za obietnicę zasięgu, tylko za faktyczną 
 **Tagline:** „Twoja reklama jedzie tam gdzie są Twoi klienci."
 
 ## Stan projektu
-- **Etap:** 🟢 **LIVE ON VERCEL** — aplikacja + seed data + gotowa do sprzedaży
-- **Gotowe:** Kod aplikacji (26 testów ✓), regulaminy v1.3, landing pages, unit economics v2, Vercel deployment
-- **🌐 LIVE URL:** https://adride-iota.vercel.app/ — auto-deploy z każdym push do `main` branch
+- **Etap:** 🟢 **LIVE** — aplikacja + seed data + gotowa do sprzedaży
+- **Gotowe:** Kod aplikacji (26 testów ✓), regulaminy v1.3, landing pages, unit economics v2, deployment VPS + Vercel
+- **🌐 LIVE URL (główna):** https://app.adride.pl — VPS mikr.us (PM2 + Nginx + Cloudflare), repo `/root/adride` gałąź **`master`**. Deploy: `git pull origin master && cd app && npm run build && pm2 restart adride`
+- **🌐 LIVE URL (zapas/demo):** https://adride-iota.vercel.app/ — auto-deploy z `main`
+- ⚠️ **Deploy gotcha:** przy błędzie Cloudflare **521** to nginx, nie app — patrz `DEPLOYMENT.md` Troubleshooting (osierocony `sites-available/ja-adride-log` → brak certu). Gałąź na VPS to `master`, NIE `main`.
 - **Gotowe (aplikacja web):**
   - ✅ Next.js 15 + TypeScript + Tailwind
   - ✅ Auth (Supabase) — 3 role: admin/driver/advertiser
