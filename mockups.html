@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AdRide — Mockupy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0D12; --bg-2:#0E131A; --card:#111720; --card-2:#161D27;
+  --line:#1E2A38; --line-2:#26323F;
+  --text:#E6EDF3; --muted:#718096; --label:#4A5568;
+  --orange:#FF6B35; --orange-soft:rgba(255,107,53,.12); --orange-line:rgba(255,107,53,.28);
+  --green:#2DD485; --green-soft:rgba(45,212,133,.12);
+  --red:#FF5C5C; --red-soft:rgba(255,92,92,.12);
+  --blue:#4C9AFF; --blue-soft:rgba(76,154,255,.12);
+  --amber:#FFC53D; --amber-soft:rgba(255,197,61,.12);
+  --f-display:'Space Grotesk',system-ui,sans-serif;
+  --f-body:'Inter',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,monospace;
+  --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:22px; --r-pill:999px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--f-body);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;line-height:1.5;}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums;}
+.disp{font-family:var(--f-display);letter-spacing:-.02em;}
+
+/* ===== TOP BAR ===== */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(10,13,18,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);}
+.topbar-inner{max-width:1320px;margin:0 auto;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;}
+.wordmark{font-family:var(--f-display);font-weight:700;font-size:22px;letter-spacing:-.03em;display:inline-flex;align-items:center;gap:8px;}
+.wordmark .dot{width:11px;height:11px;border-radius:50%;background:var(--orange);box-shadow:0 0 0 4px var(--orange-soft);}
+.tabs{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-pill);padding:4px;flex-wrap:wrap;}
+.tab{border:none;background:transparent;color:var(--muted);font-family:var(--f-body);font-size:13.5px;font-weight:600;padding:9px 16px;border-radius:var(--r-pill);cursor:pointer;transition:all .18s;white-space:nowrap;}
+.tab:hover{color:var(--text);}
+.tab.active{background:var(--orange);color:#0A0D12;}
+.topbar-note{font-family:var(--f-mono);font-size:11px;color:var(--label);text-transform:uppercase;letter-spacing:.06em;}
+
+/* ===== LAYOUT ===== */
+.view{display:none;max-width:1320px;margin:0 auto;padding:40px 28px 100px;}
+.view.active{display:block;animation:fade .35s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+.view-head{margin-bottom:36px;}
+.view-eyebrow{font-family:var(--f-mono);font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--orange);margin-bottom:10px;}
+.view-title{font-family:var(--f-display);font-size:clamp(26px,3.4vw,38px);font-weight:600;letter-spacing:-.025em;line-height:1.05;}
+.view-lede{color:var(--muted);font-size:16px;max-width:680px;margin-top:12px;}
+
+.screens-label{font-family:var(--f-mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--label);margin:0 0 14px;display:flex;align-items:center;gap:10px;}
+.screens-label::after{content:'';flex:1;height:1px;background:var(--line);}
+
+/* ===== GENERIC CARDS ===== */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);}
+.pad{padding:20px;}
+.row{display:flex;gap:16px;}
+.col{display:flex;flex-direction:column;gap:16px;}
+.grid{display:grid;gap:16px;}
+.tag{display:inline-flex;align-items:center;gap:5px;font-family:var(--f-mono);font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:4px 9px;border-radius:var(--r-pill);background:var(--card-2);color:var(--muted);}
+.tag.orange{background:var(--orange-soft);color:var(--orange);}
+.tag.green{background:var(--green-soft);color:var(--green);}
+.tag.red{background:var(--red-soft);color:var(--red);}
+.tag.blue{background:var(--blue-soft);color:var(--blue);}
+.tag.amber{background:var(--amber-soft);color:var(--amber);}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 var(--green);animation:pulse 1.6s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(45,212,133,.6);}70%{box-shadow:0 0 0 7px rgba(45,212,133,0);}100%{box-shadow:0 0 0 0 rgba(45,212,133,0);}}
+
+.btn{font-family:var(--f-body);font-weight:600;font-size:14px;padding:11px 18px;border-radius:var(--r-md);border:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:all .15s;}
+.btn-orange{background:var(--orange);color:#0A0D12;}
+.btn-orange:hover{filter:brightness(1.08);}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--line-2);}
+.btn-ghost:hover{background:var(--card-2);}
+.btn-full{width:100%;}
+.btn-sm{padding:8px 13px;font-size:13px;}
+
+.stat-label{font-family:var(--f-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--label);margin-bottom:8px;}
+.stat-val{font-family:var(--f-display);font-size:28px;font-weight:600;letter-spacing:-.02em;}
+.stat-val .u{font-size:14px;color:var(--muted);font-weight:500;margin-left:3px;}
+.stat-sub{font-family:var(--f-mono);font-size:11.5px;margin-top:6px;}
+.up{color:var(--green);} .down{color:var(--red);}
+
+/* ===== PHONE FRAME ===== */
+.phones{display:flex;gap:28px;flex-wrap:wrap;}
+.phone{width:300px;flex-shrink:0;}
+.phone-cap{font-family:var(--f-mono);font-size:11px;color:var(--muted);text-align:center;margin-bottom:12px;letter-spacing:.04em;}
+.phone-frame{background:#05070A;border:8px solid #05070A;border-radius:38px;box-shadow:0 30px 70px rgba(0,0,0,.5),0 0 0 1px var(--line);overflow:hidden;position:relative;}
+.phone-notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:24px;background:#05070A;border-radius:0 0 16px 16px;z-index:20;}
+.phone-screen{background:var(--bg);border-radius:30px;overflow:hidden;height:600px;overflow-y:auto;position:relative;}
+.phone-screen::-webkit-scrollbar{width:0;}
+.ph-statusbar{display:flex;justify-content:space-between;align-items:center;padding:14px 20px 8px;font-family:var(--f-mono);font-size:11px;color:var(--text);}
+.ph-pad{padding:4px 16px 24px;}
+.ph-bottomnav{position:sticky;bottom:0;background:rgba(14,19,26,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:10px 0 16px;}
+.ph-nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:9.5px;color:var(--label);font-weight:600;}
+.ph-nav-item.active{color:var(--orange);}
+.ph-nav-ico{font-size:18px;line-height:1;}
+
+/* ===== BROWSER FRAME ===== */
+.browser{border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--line);box-shadow:0 24px 60px rgba(0,0,0,.4);margin-bottom:32px;}
+.browser-bar{background:var(--card);border-bottom:1px solid var(--line);padding:11px 16px;display:flex;align-items:center;gap:10px;}
+.browser-dots{display:flex;gap:6px;}
+.browser-dots span{width:11px;height:11px;border-radius:50%;}
+.browser-url{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:var(--r-pill);padding:6px 14px;font-family:var(--f-mono);font-size:12px;color:var(--muted);max-width:420px;}
+.browser-body{background:var(--bg-2);display:flex;min-height:520px;}
+
+/* app sidebar */
+.app-side{width:210px;flex-shrink:0;background:var(--card);border-right:1px solid var(--line);padding:18px 12px;display:flex;flex-direction:column;gap:4px;}
+.side-brand{display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-weight:700;font-size:17px;padding:6px 10px 16px;}
+.side-brand .dot{width:9px;height:9px;border-radius:50%;background:var(--orange);}
+.side-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r-sm);font-size:13.5px;font-weight:500;color:var(--muted);cursor:default;}
+.side-item .ico{width:18px;text-align:center;opacity:.8;}
+.side-item.active{background:var(--orange-soft);color:var(--orange);}
+.side-foot{margin-top:auto;padding:10px;display:flex;align-items:center;gap:10px;border-top:1px solid var(--line);}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--amber));display:flex;align-items:center;justify-content:center;font-weight:700;color:#0A0D12;font-size:13px;flex-shrink:0;}
+.app-main{flex:1;padding:24px 26px;overflow:hidden;}
+.app-topline{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:16px;flex-wrap:wrap;}
+.app-h1{font-family:var(--f-display);font-size:21px;font-weight:600;letter-spacing:-.02em;}
+
+/* ===== MAP ===== */
+.map{position:relative;background:linear-gradient(135deg,#0C1219,#0E1620);border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;}
+.map-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:34px 34px;}
+.road{position:absolute;background:#1B2734;border-radius:3px;}
+.veh{position:absolute;width:13px;height:13px;border-radius:50%;background:var(--orange);border:2px solid #0A0D12;box-shadow:0 0 0 0 rgba(255,107,53,.6);animation:pulse-o 1.8s infinite;z-index:5;}
+@keyframes pulse-o{0%{box-shadow:0 0 0 0 rgba(255,107,53,.55);}70%{box-shadow:0 0 0 10px rgba(255,107,53,0);}100%{box-shadow:0 0 0 0 rgba(255,107,53,0);}}
+.veh.g{background:var(--green);animation-name:pulse;}
+.heat{position:absolute;border-radius:50%;filter:blur(18px);}
+.map-pin{position:absolute;display:flex;flex-direction:column;align-items:center;z-index:6;}
+.map-card{position:absolute;background:var(--card);border:1px solid var(--line-2);border-radius:var(--r-md);padding:10px 13px;box-shadow:0 12px 30px rgba(0,0,0,.5);z-index:10;min-width:150px;}
+
+/* ===== TABLE ===== */
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px;}
+.tbl th{text-align:left;font-family:var(--f-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--label);font-weight:600;padding:10px 14px;border-bottom:1px solid var(--line);}
+.tbl td{padding:13px 14px;border-bottom:1px solid var(--line);color:var(--text);}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:var(--card-2);}
+.t-name{display:flex;align-items:center;gap:10px;}
+.t-sub{font-size:11.5px;color:var(--muted);font-family:var(--f-mono);}
+
+/* ===== STEPPER ===== */
+.stepper{display:flex;align-items:center;gap:0;margin-bottom:28px;flex-wrap:wrap;}
+.step{display:flex;align-items:center;gap:10px;}
+.step-num{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:13px;font-weight:600;border:1.5px solid var(--line-2);color:var(--muted);flex-shrink:0;}
+.step.done .step-num{background:var(--green);border-color:var(--green);color:#0A0D12;}
+.step.active .step-num{background:var(--orange);border-color:var(--orange);color:#0A0D12;}
+.step-lbl{font-size:13px;font-weight:600;color:var(--muted);}
+.step.active .step-lbl,.step.done .step-lbl{color:var(--text);}
+.step-line{width:38px;height:1.5px;background:var(--line-2);margin:0 12px;}
+.step.done+.step-line,.step-line.done{background:var(--green);}
+
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:7px;}
+.input{width:100%;background:var(--bg);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:11px 13px;color:var(--text);font-family:var(--f-body);font-size:14px;}
+.input::placeholder{color:var(--label);}
+.choice{border:1.5px solid var(--line-2);border-radius:var(--r-md);padding:16px;cursor:pointer;transition:all .15s;}
+.choice:hover{border-color:var(--line-2);background:var(--card-2);}
+.choice.sel{border-color:var(--orange);background:var(--orange-soft);}
+.radio{width:18px;height:18px;border-radius:50%;border:2px solid var(--line-2);flex-shrink:0;position:relative;}
+.choice.sel .radio{border-color:var(--orange);}
+.choice.sel .radio::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--orange);}
+
+.slider-track{height:6px;background:var(--card-2);border-radius:var(--r-pill);position:relative;margin:10px 0 6px;}
+.slider-fill{position:absolute;left:0;top:0;bottom:0;background:var(--orange);border-radius:var(--r-pill);}
+.slider-knob{position:absolute;top:50%;transform:translate(-50%,-50%);width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.4);}
+
+.bar-row{display:flex;align-items:center;gap:12px;margin-bottom:11px;}
+.bar-lbl{width:90px;font-size:12.5px;color:var(--muted);flex-shrink:0;}
+.bar-track{flex:1;height:8px;background:var(--card-2);border-radius:var(--r-pill);overflow:hidden;}
+.bar-fill{height:100%;border-radius:var(--r-pill);background:var(--orange);}
+.bar-val{width:54px;text-align:right;font-family:var(--f-mono);font-size:12px;}
+
+.proof-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.proof{aspect-ratio:4/3;border-radius:var(--r-sm);border:1px solid var(--line);background:linear-gradient(135deg,#16202C,#0F1620);position:relative;overflow:hidden;display:flex;align-items:flex-end;}
+.proof .meta{padding:7px 9px;font-family:var(--f-mono);font-size:9px;color:var(--text);background:linear-gradient(transparent,rgba(0,0,0,.7));width:100%;}
+.proof .ico{position:absolute;top:8px;right:8px;font-size:13px;}
+.proof .car-silhouette{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:42px;opacity:.25;}
+
+.divider{height:1px;background:var(--line);margin:18px 0;}
+.kv{display:flex;justify-content:space-between;align-items:center;padding:9px 0;font-size:13.5px;}
+.kv+.kv{border-top:1px solid var(--line);}
+.kv .k{color:var(--muted);}
+.kv .v{font-weight:600;font-family:var(--f-mono);}
+.note{font-size:12.5px;color:var(--muted);background:var(--card-2);border:1px solid var(--line);border-left:3px solid var(--orange);border-radius:var(--r-sm);padding:11px 13px;}
+
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);}
+.legend span{display:inline-flex;align-items:center;gap:6px;}
+.legend i{width:9px;height:9px;border-radius:50%;display:inline-block;}
+
+@media(max-width:760px){
+  .browser-body{flex-direction:column;}
+  .app-side{width:100%;flex-direction:row;flex-wrap:wrap;border-right:none;border-bottom:1px solid var(--line);}
+  .side-brand{width:100%;}
+  .side-foot{display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="wordmark"><span class="dot"></span>AdRide</div>
+    <div class="tabs">
+      <button class="tab active" data-view="onboarding">Onboarding</button>
+      <button class="tab" data-view="driver">Kierowca · mobile</button>
+      <button class="tab" data-view="advertiser">Reklamodawca · web</button>
+      <button class="tab" data-view="admin">Admin</button>
+    </div>
+    <div class="topbar-note">Mockupy · v1</div>
+  </div>
+</div>
+
+<!-- ============ ONBOARDING ============ -->
+<section class="view active" id="onboarding">
+  <div class="view-head">
+    <div class="view-eyebrow">Onboarding · obie strony</div>
+    <h1 class="view-title">Rejestracja kierowcy i reklamodawcy</h1>
+    <p class="view-lede">Wspólny ekran wyboru roli, a następnie dwie osobne ścieżki: kierowca konfiguruje auto i wypłaty, reklamodawca — brand, budżet i targeting.</p>
+  </div>
+
+  <p class="screens-label">Ekran startowy — wybór roli</p>
+  <div class="browser" style="max-width:760px;margin:0 auto 40px;">
+    <div class="browser-bar">
+      <div class="browser-dots"><span style="background:#FF5C5C"></span><span style="background:#FFC53D"></span><span style="background:#2DD485"></span></div>
+      <div class="browser-url">adride.pl/start</div>
+    </div>
+    <div class="browser-body" style="display:block;padding:48px 40px;text-align:center;">
+      <div class="wordmark" style="font-size:26px;justify-content:center;margin-bottom:10px;"><span class="dot"></span>AdRide</div>
+      <h2 class="disp" style="font-size:30px;font-weight:600;margin-bottom:8px;">Dołącz do AdRide</h2>
+      <p style="color:var(--muted);margin-bottom:32px;">Wybierz, kim jesteś — dopasujemy resztę.</p>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:18px;max-width:560px;margin:0 auto;">
+        <div class="choice sel" style="text-align:left;">
+          <div style="font-size:30px;margin-bottom:12px;">🚗</div>
+          <div class="disp" style="font-size:18px;font-weight:600;margin-bottom:6px;">Jestem kierowcą</div>
+          <p style="font-size:13px;color:var(--muted);">Jeżdżę dla Uber/Bolt i chcę zarabiać 200–600 zł/mies. na reklamach.</p>
+        </div>
+        <div class="choice" style="text-align:left;">
+          <div style="font-size:30px;margin-bottom:12px;">📣</div>
+          <div class="disp" style="font-size:18px;font-weight:600;margin-bottom:6px;">Jestem reklamodawcą</div>
+          <p style="font-size:13px;color:var(--muted);">Chcę reklamować lokalny biznes i płacić za realne kilometry.</p>
+        </div>
+      </div>
+      <button class="btn btn-orange btn-lg" style="margin-top:28px;padding:14px 40px;">Kontynuuj →</button>
+    </div>
+  </div>
+
+  <div class="row" style="flex-wrap:wrap;gap:28px;">
+    <!-- DRIVER ONBOARDING -->
+    <div style="flex:1;min-width:340px;">
+      <p class="screens-label">Ścieżka kierowcy</p>
+      <div class="card pad">
+        <div class="stepper">
+          <div class="step done"><span class="step-num">✓</span><span class="step-lbl">Dane</span></div>
+          <div class="step-line done"></div>
+          <div class="step active"><span class="step-num">2</span><span class="step-lbl">Auto</span></div>
+          <div class="step-line"></div>
+          <div class="step"><span class="step-num">3</span><span class="step-lbl">Montaż</span></div>
+          <div class="step-line"></div>
+          <div class="step"><span class="step-num">4</span><span class="step-lbl">Wypłaty</span></div>
+        </div>
+        <h3 class="disp" style="font-size:19px;font-weight:600;margin-bottom:4px;">Twój samochód</h3>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:18px;">Reklama musi pasować do karoserii — podaj model i kolor.</p>
+        <div class="row">
+          <div class="field" style="flex:1;"><label>Marka</label><input class="input" value="Toyota" readonly></div>
+          <div class="field" style="flex:1;"><label>Model</label><input class="input" value="Corolla" readonly></div>
+        </div>
+        <div class="row">
+          <div class="field" style="flex:1;"><label>Rok</label><input class="input" value="2021" readonly></div>
+          <div class="field" style="flex:1;"><label>Kolor nadwozia</label><input class="input" value="Biały" readonly></div>
+        </div>
+        <div class="field"><label>Średni przebieg miesięczny</label><input class="input" value="3 800 km" readonly></div>
+        <div class="note">📍 Twoje główne dzielnice: <b style="color:var(--text)">Mokotów, Śródmieście</b> — to zwiększa Twoją stawkę.</div>
+        <div class="row" style="margin-top:18px;">
+          <button class="btn btn-ghost" style="flex:0;">← Wstecz</button>
+          <button class="btn btn-orange btn-full">Dalej: montaż reklamy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADVERTISER ONBOARDING -->
+    <div style="flex:1;min-width:340px;">
+      <p class="screens-label">Ścieżka reklamodawcy</p>
+      <div class="card pad">
+        <div class="stepper">
+          <div class="step done"><span class="step-num">✓</span><span class="step-lbl">Brand</span></div>
+          <div class="step-line done"></div>
+          <div class="step active"><span class="step-num">2</span><span class="step-lbl">Budżet</span></div>
+          <div class="step-line"></div>
+          <div class="step"><span class="step-num">3</span><span class="step-lbl">Targeting</span></div>
+          <div class="step-line"></div>
+          <div class="step"><span class="step-num">4</span><span class="step-lbl">Płatność</span></div>
+        </div>
+        <h3 class="disp" style="font-size:19px;font-weight:600;margin-bottom:4px;">Budżet kampanii</h3>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:18px;">Płacisz za przejechane kilometry z Twoją reklamą — nie za obietnice.</p>
+        <div class="field">
+          <label>Budżet miesięczny</label>
+          <div class="slider-track"><div class="slider-fill" style="width:42%"></div><div class="slider-knob" style="left:42%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;color:var(--label);"><span>500 zł</span><span style="color:var(--orange);font-size:15px;">3 000 zł</span><span>10 000 zł</span></div>
+        </div>
+        <div class="divider"></div>
+        <div class="kv"><span class="k">Szacowany zasięg</span><span class="v">~38 200 wyśw./mies.</span></div>
+        <div class="kv"><span class="k">Pokryte kilometry</span><span class="v">~4 200 km</span></div>
+        <div class="kv"><span class="k">Efektywne CPM</span><span class="v" style="color:var(--green)">~7,85 zł</span></div>
+        <div class="kv"><span class="k">Liczba aut</span><span class="v">3–5 kierowców</span></div>
+        <div class="row" style="margin-top:18px;">
+          <button class="btn btn-ghost" style="flex:0;">← Wstecz</button>
+          <button class="btn btn-orange btn-full">Dalej: targeting</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DRIVER MOBILE ============ -->
+<section class="view" id="driver">
+  <div class="view-head">
+    <div class="view-eyebrow">Aplikacja kierowcy · React Native / Expo</div>
+    <h1 class="view-title">Mobile — zarobki, kampania, dowody</h1>
+    <p class="view-lede">Kierowca widzi swoje zarobki, aktualną kampanię z trackingiem GPS, robi zdjęcia-dowody montażu i śledzi wypłaty.</p>
+  </div>
+
+  <div class="phones">
+    <!-- DASHBOARD -->
+    <div class="phone">
+      <div class="phone-cap">Dashboard</div>
+      <div class="phone-frame"><div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="ph-statusbar"><span>9:41</span><span>📶 🔋</span></div>
+          <div class="ph-pad">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+              <div><div style="font-size:12px;color:var(--muted);">Cześć,</div><div class="disp" style="font-size:18px;font-weight:600;">Marek 👋</div></div>
+              <div class="avatar">MK</div>
+            </div>
+            <div class="card pad" style="background:linear-gradient(135deg,#1A130C,#111720);border-color:var(--orange-line);margin-bottom:14px;">
+              <div class="stat-label">Zarobek w tym miesiącu</div>
+              <div class="stat-val" style="font-size:38px;color:var(--orange);">487 <span class="u">zł</span></div>
+              <div class="stat-sub up">▲ +62 zł vs poprzedni miesiąc</div>
+            </div>
+            <div class="row" style="gap:10px;margin-bottom:14px;">
+              <div class="card pad" style="flex:1;padding:14px;"><div class="stat-label">Przejechane</div><div class="stat-val" style="font-size:21px;">2 340<span class="u">km</span></div></div>
+              <div class="card pad" style="flex:1;padding:14px;"><div class="stat-label">Wyświetlenia</div><div class="stat-val" style="font-size:21px;">61<span class="u">k</span></div></div>
+            </div>
+            <p class="screens-label" style="margin:18px 0 10px;">Aktywna kampania</p>
+            <div class="card pad" style="padding:15px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <div style="display:flex;align-items:center;gap:9px;"><div style="width:34px;height:34px;border-radius:8px;background:var(--red-soft);display:flex;align-items:center;justify-content:center;font-size:17px;">🍕</div><div><div style="font-weight:600;font-size:14px;">Pizza Vesuvio</div><div class="t-sub">do 30 cze</div></div></div>
+                <span class="tag green"><span class="live-dot"></span>Live</span>
+              </div>
+              <div class="bar-track" style="margin-bottom:6px;"><div class="bar-fill" style="width:68%"></div></div>
+              <div style="display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;color:var(--muted);"><span>68% celu km</span><span>2 340 / 3 450 km</span></div>
+            </div>
+            <button class="btn btn-orange btn-full" style="margin-top:14px;">📸 Dodaj zdjęcie-dowód</button>
+          </div>
+          <div class="ph-bottomnav">
+            <div class="ph-nav-item active"><span class="ph-nav-ico">⌂</span>Panel</div>
+            <div class="ph-nav-item"><span class="ph-nav-ico">📊</span>Kampania</div>
+            <div class="ph-nav-item"><span class="ph-nav-ico">💳</span>Wypłaty</div>
+            <div class="ph-nav-item"><span class="ph-nav-ico">☰</span>Więcej</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVE CAMPAIGN + TRACKING -->
+    <div class="phone">
+      <div class="phone-cap">Kampania + tracking GPS</div>
+      <div class="phone-frame"><div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="ph-statusbar"><span>9:41</span><span>📶 🔋</span></div>
+          <div class="ph-pad">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;"><span style="font-size:18px;">←</span><div class="disp" style="font-size:17px;font-weight:600;">Pizza Vesuvio</div></div>
+            <div class="map" style="height:200px;margin-bottom:14px;">
+              <div class="map-grid"></div>
+              <div class="road" style="left:-5%;right:-5%;top:42%;height:4px;transform:rotate(-3deg);"></div>
+              <div class="road" style="top:-5%;bottom:-5%;left:46%;width:4px;"></div>
+              <div class="heat" style="width:90px;height:90px;background:rgba(255,107,53,.35);top:30%;left:35%;"></div>
+              <svg style="position:absolute;inset:0;width:100%;height:100%;z-index:4" viewBox="0 0 260 200"><polyline points="40,170 70,130 110,120 140,80 190,70 220,40" fill="none" stroke="#FF6B35" stroke-width="2.5" stroke-dasharray="4 4" opacity=".8"/></svg>
+              <div class="veh" style="top:35%;left:73%;"></div>
+              <div class="map-card" style="bottom:10px;left:10px;padding:8px 11px;min-width:0;"><div class="stat-label" style="margin:0;">Dziś</div><div class="mono" style="font-size:16px;font-weight:600;color:var(--orange);">38,2 km</div></div>
+            </div>
+            <div class="card pad" style="padding:15px;margin-bottom:12px;">
+              <div class="kv"><span class="k">Stawka za km</span><span class="v" style="color:var(--green)">0,18 zł</span></div>
+              <div class="kv"><span class="k">Zarobek z kampanii</span><span class="v">421,20 zł</span></div>
+              <div class="kv"><span class="k">Dni do końca</span><span class="v">12 dni</span></div>
+            </div>
+            <div class="note">🛰️ Tracking aktywny w tle. Naliczamy km tylko gdy reklama jest zamontowana i auto się porusza.</div>
+          </div>
+          <div class="ph-bottomnav">
+            <div class="ph-nav-item"><span class="ph-nav-ico">⌂</span>Panel</div>
+            <div class="ph-nav-item active"><span class="ph-nav-ico">📊</span>Kampania</div>
+            <div class="ph-nav-item"><span class="ph-nav-ico">💳</span>Wypłaty</div>
+            <div class="ph-nav-item"><span class="ph-nav-ico">☰</span>Więcej</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROOF PHOTOS -->
+    <div class="phone">
+      <div class="phone-cap">Zdjęcia-dowody</div>
+      <div class="phone-frame"><div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="ph-statusbar"><span>9:41</span><span>📶 🔋</span></div>
+          <div class="ph-pad">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;"><span style="font-size:18px;">←</span><div class="disp" style="font-size:17px;font-weight:600;">Dowody montażu</div></div>
+            <p style="font-size:12.5px;color:var(--muted);margin-bottom:16px;">Raz w tygodniu zrób zdjęcie reklamy z widoczną tablicą. GPS + czas dodawane automatycznie.</p>
+            <div class="card pad" style="padding:0;overflow:hidden;margin-bottom:14px;">
+              <div style="aspect-ratio:4/3;background:linear-gradient(135deg,#1A130C,#0F1620);display:flex;align-items:center;justify-content:center;position:relative;">
+                <div style="font-size:56px;opacity:.3;">🚗</div>
+                <div style="position:absolute;inset:14px;border:2px dashed var(--orange-line);border-radius:10px;"></div>
+                <div style="position:absolute;bottom:12px;left:0;right:0;text-align:center;font-family:var(--f-mono);font-size:11px;color:var(--orange);">Ustaw reklamę w ramce</div>
+              </div>
+            </div>
+            <button class="btn btn-orange btn-full" style="margin-bottom:16px;">📸 Zrób zdjęcie</button>
+            <p class="screens-label" style="margin-bottom:10px;">Ostatnie dowody</p>
+            <div class="proof-grid">
+              <div class="proof"><div class="car-silhouette">🚗</div><span class="ico">✅</span><div class="meta">22.06 · Mokotów · 09:14</div></div>
+              <div class="proof"><div class="car-silhouette">🚗</div><span class="ico">✅</span><div class="meta">15.06 · Wola · 18:02</div></div>
+              <div class="proof"><div class="car-silhouette">🚗</div><span class="ico">⏳</span><div class="meta">08.06 · Śródm. · 12:40</div></div>
+              <div class="proof"><div class="car-silhouette">🚗</div><span class="ico">✅</span><div class="meta">01.06 · Praga · 08:55</div></div>
+            </div>
+          </div>
+          <div class="ph-bottomnav">
+            <div class="ph-nav-item"><span class="ph-nav-ico">⌂</span>Panel</div>
+            <div class="ph-nav-item active"><span class="ph-nav-ico">📊</span>Kampania</div>
+            <div class="ph-nav-item"><span class="ph-nav-ico">💳</span>Wypłaty</div>
+            <div class="ph-nav-item"><span class="ph-nav-ico">☰</span>Więcej</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAYOUTS -->
+    <div class="phone">
+      <div class="phone-cap">Wypłaty (Stripe)</div>
+      <div class="phone-frame"><div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="ph-statusbar"><span>9:41</span><span>📶 🔋</span></div>
+          <div class="ph-pad">
+            <div class="disp" style="font-size:17px;font-weight:600;margin-bottom:14px;">Wypłaty</div>
+            <div class="card pad" style="margin-bottom:14px;">
+              <div class="stat-label">Saldo do wypłaty</div>
+              <div class="stat-val" style="font-size:32px;">487,00 <span class="u">zł</span></div>
+              <button class="btn btn-orange btn-full btn-sm" style="margin-top:12px;">Wypłać na konto</button>
+              <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px;">Następna auto-wypłata: 1 lip</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:9px;background:var(--green-soft);border:1px solid rgba(45,212,133,.25);border-radius:var(--r-sm);padding:11px 13px;margin-bottom:16px;">
+              <span style="font-size:16px;">✅</span><div style="font-size:12.5px;"><b>Konto Stripe podłączone</b><br><span style="color:var(--muted)">mBank ····4821</span></div>
+            </div>
+            <p class="screens-label" style="margin-bottom:10px;">Historia</p>
+            <div class="card" style="padding:0;">
+              <div class="kv" style="padding:13px 15px;"><div><div style="font-weight:600;">Wypłata</div><div class="t-sub">1 cze 2026</div></div><span class="v up">+425 zł</span></div>
+              <div class="kv" style="padding:13px 15px;"><div><div style="font-weight:600;">Wypłata</div><div class="t-sub">1 maj 2026</div></div><span class="v up">+398 zł</span></div>
+              <div class="kv" style="padding:13px 15px;"><div><div style="font-weight:600;">Bonus polecenie</div><div class="t-sub">24 kwi 2026</div></div><span class="v up">+50 zł</span></div>
+            </div>
+          </div>
+          <div class="ph-bottomnav">
+            <div class="ph-nav-item"><span class="ph-nav-ico">⌂</span>Panel</div>
+            <div class="ph-nav-item"><span class="ph-nav-ico">📊</span>Kampania</div>
+            <div class="ph-nav-item active"><span class="ph-nav-ico">💳</span>Wypłaty</div>
+            <div class="ph-nav-item"><span class="ph-nav-ico">☰</span>Więcej</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ADVERTISER WEB ============ -->
+<section class="view" id="advertiser">
+  <div class="view-head">
+    <div class="view-eyebrow">Panel reklamodawcy · Next.js</div>
+    <h1 class="view-title">Web — dashboard, mapa live, płatność</h1>
+    <p class="view-lede">Reklamodawca śledzi kampanię w czasie rzeczywistym: statystyki ekspozycji, mapę GPS z autami, oraz rozliczenie przez Stripe.</p>
+  </div>
+
+  <p class="screens-label">Dashboard kampanii + mapa live</p>
+  <div class="browser">
+    <div class="browser-bar">
+      <div class="browser-dots"><span style="background:#FF5C5C"></span><span style="background:#FFC53D"></span><span style="background:#2DD485"></span></div>
+      <div class="browser-url">app.adride.pl/kampania/pizza-vesuvio</div>
+    </div>
+    <div class="browser-body">
+      <aside class="app-side">
+        <div class="side-brand"><span class="dot"></span>AdRide</div>
+        <div class="side-item active"><span class="ico">📊</span>Kampanie</div>
+        <div class="side-item"><span class="ico">🗺️</span>Mapa live</div>
+        <div class="side-item"><span class="ico">📈</span>Statystyki</div>
+        <div class="side-item"><span class="ico">🚗</span>Flota</div>
+        <div class="side-item"><span class="ico">💳</span>Płatności</div>
+        <div class="side-item"><span class="ico">⚙️</span>Ustawienia</div>
+        <div class="side-foot"><div class="avatar">RV</div><div style="font-size:12px;"><div style="font-weight:600;">Rest. Vesuvio</div><div class="t-sub">Pro</div></div></div>
+      </aside>
+      <main class="app-main">
+        <div class="app-topline">
+          <div><div class="app-h1">Pizza Vesuvio</div><div style="font-size:12.5px;color:var(--muted);margin-top:3px;">01.06 – 30.06.2026 · Warszawa</div></div>
+          <div style="display:flex;gap:10px;align-items:center;"><span class="tag green"><span class="live-dot"></span>Aktywna</span><button class="btn btn-ghost btn-sm">Eksport PDF</button></div>
+        </div>
+        <div class="grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px;">
+          <div class="card pad"><div class="stat-label">Pokryte km</div><div class="stat-val">12 840</div><div class="stat-sub up">▲ 8,2% tydz.</div></div>
+          <div class="card pad"><div class="stat-label">Wyświetlenia</div><div class="stat-val">214<span class="u">k</span></div><div class="stat-sub up">▲ 11% tydz.</div></div>
+          <div class="card pad"><div class="stat-label">CPM</div><div class="stat-val">7,40<span class="u">zł</span></div><div class="stat-sub up">▼ lepsze niż cel</div></div>
+          <div class="card pad"><div class="stat-label">Wydano</div><div class="stat-val">1 584<span class="u">zł</span></div><div class="stat-sub" style="color:var(--muted)">z 3 000 zł</div></div>
+        </div>
+        <div class="row" style="align-items:stretch;">
+          <div class="card pad" style="flex:1.6;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><b style="font-size:14px;">Mapa live — Warszawa</b><span class="tag green"><span class="live-dot"></span>4 auta jadą</span></div>
+            <div class="map" style="height:240px;">
+              <div class="map-grid"></div>
+              <div class="road" style="left:-5%;right:-5%;top:35%;height:4px;transform:rotate(-2deg);"></div>
+              <div class="road" style="left:-5%;right:-5%;top:64%;height:5px;transform:rotate(1.5deg);"></div>
+              <div class="road" style="top:-5%;bottom:-5%;left:30%;width:3px;"></div>
+              <div class="road" style="top:-5%;bottom:-5%;left:68%;width:4px;transform:rotate(-3deg);"></div>
+              <div class="heat" style="width:120px;height:120px;background:rgba(255,107,53,.28);top:20%;left:40%;"></div>
+              <div class="heat" style="width:90px;height:90px;background:rgba(255,107,53,.2);top:50%;left:60%;"></div>
+              <div class="veh" style="top:34%;left:45%;"></div>
+              <div class="veh" style="top:62%;left:62%;"></div>
+              <div class="veh g" style="top:48%;left:28%;"></div>
+              <div class="veh" style="top:30%;left:72%;"></div>
+              <div class="map-card" style="top:14px;right:14px;"><div class="stat-label" style="margin:0 0 4px;">Toyota · WX 8842</div><div style="display:flex;align-items:center;gap:6px;"><span class="live-dot"></span><span class="mono" style="font-size:13px;">38 km/h · Mokotów</span></div></div>
+            </div>
+            <div class="legend" style="margin-top:12px;"><span><i style="background:var(--orange)"></i>Auto w ruchu</span><span><i style="background:var(--green)"></i>Świeży dowód</span><span><i style="background:rgba(255,107,53,.3)"></i>Heatmapa ekspozycji</span></div>
+          </div>
+          <div class="card pad" style="flex:1;">
+            <b style="font-size:14px;">Ekspozycja wg dzielnicy</b>
+            <div style="margin-top:16px;">
+              <div class="bar-row"><span class="bar-lbl">Mokotów</span><div class="bar-track"><div class="bar-fill" style="width:88%"></div></div><span class="bar-val">62k</span></div>
+              <div class="bar-row"><span class="bar-lbl">Śródmieście</span><div class="bar-track"><div class="bar-fill" style="width:72%"></div></div><span class="bar-val">51k</span></div>
+              <div class="bar-row"><span class="bar-lbl">Wola</span><div class="bar-track"><div class="bar-fill" style="width:54%"></div></div><span class="bar-val">38k</span></div>
+              <div class="bar-row"><span class="bar-lbl">Praga Płd.</span><div class="bar-track"><div class="bar-fill" style="width:40%"></div></div><span class="bar-val">28k</span></div>
+              <div class="bar-row"><span class="bar-lbl">Ursynów</span><div class="bar-track"><div class="bar-fill" style="width:48%"></div></div><span class="bar-val">34k</span></div>
+            </div>
+            <div class="divider"></div>
+            <div class="kv"><span class="k">Aktywne auta</span><span class="v">4 / 5</span></div>
+            <div class="kv"><span class="k">Śr. km / auto / dzień</span><span class="v">94 km</span></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="row" style="flex-wrap:wrap;gap:28px;">
+    <!-- CREATE CAMPAIGN -->
+    <div style="flex:1.3;min-width:380px;">
+      <p class="screens-label">Tworzenie kampanii — targeting</p>
+      <div class="card pad">
+        <div class="row">
+          <div style="flex:1;">
+            <div class="field"><label>Nazwa kampanii</label><input class="input" value="Pizza Vesuvio — lato" readonly></div>
+            <div class="field"><label>Cel</label><input class="input" value="Lokalna świadomość marki" readonly></div>
+            <div class="field"><label>Budżet miesięczny</label>
+              <div class="slider-track"><div class="slider-fill" style="width:42%"></div><div class="slider-knob" style="left:42%"></div></div>
+              <div style="display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;color:var(--label);"><span>500</span><span style="color:var(--orange);">3 000 zł</span><span>10k</span></div>
+            </div>
+          </div>
+          <div style="flex:1;">
+            <label style="display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:7px;">Dzielnice docelowe</label>
+            <div class="map" style="height:200px;">
+              <div class="map-grid"></div>
+              <div style="position:absolute;top:18%;left:22%;width:80px;height:60px;background:var(--orange-soft);border:1.5px solid var(--orange);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-family:var(--f-mono);color:var(--orange);">Mokotów</div>
+              <div style="position:absolute;top:30%;left:54%;width:70px;height:50px;background:var(--orange-soft);border:1.5px solid var(--orange);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-family:var(--f-mono);color:var(--orange);">Śródm.</div>
+              <div style="position:absolute;top:62%;left:30%;width:64px;height:46px;background:rgba(255,255,255,.04);border:1.5px dashed var(--line-2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-family:var(--f-mono);color:var(--muted);">Wola</div>
+            </div>
+            <p style="font-size:11.5px;color:var(--muted);margin-top:8px;">Zaznaczono <b style="color:var(--orange)">2 dzielnice</b> · kliknij, by dodać kolejne</p>
+          </div>
+        </div>
+        <div class="note" style="margin-top:8px;">📊 Prognoza: <b style="color:var(--text)">~38 200 wyświetleń/mies.</b> przy CPM ~7,85 zł · 3–5 aut</div>
+        <button class="btn btn-orange btn-full" style="margin-top:16px;">Przejdź do płatności →</button>
+      </div>
+    </div>
+
+    <!-- STRIPE PAYMENT -->
+    <div style="flex:1;min-width:320px;">
+      <p class="screens-label">Płatność — Stripe</p>
+      <div class="card pad">
+        <h3 class="disp" style="font-size:18px;font-weight:600;margin-bottom:16px;">Podsumowanie</h3>
+        <div class="kv"><span class="k">Kampania Pizza Vesuvio</span><span class="v">3 000,00 zł</span></div>
+        <div class="kv"><span class="k">Prowizja AdRide (12%)</span><span class="v">360,00 zł</span></div>
+        <div class="kv"><span class="k">VAT 23%</span><span class="v">772,80 zł</span></div>
+        <div class="kv" style="border-top:1px solid var(--line-2);"><span class="k" style="font-weight:600;color:var(--text)">Razem / mies.</span><span class="v" style="font-size:17px;color:var(--orange)">4 132,80 zł</span></div>
+        <div class="field" style="margin-top:18px;"><label>Karta</label><div class="input" style="display:flex;align-items:center;justify-content:space-between;"><span class="mono" style="color:var(--text)">4242 4242 4242 4242</span><span style="font-size:18px;">💳</span></div></div>
+        <div class="row"><div class="field" style="flex:1;"><label>Ważność</label><input class="input mono" value="08 / 27" readonly></div><div class="field" style="flex:1;"><label>CVC</label><input class="input mono" value="···" readonly></div></div>
+        <button class="btn btn-orange btn-full" style="margin-top:8px;">🔒 Zapłać 4 132,80 zł</button>
+        <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:10px;">Płatność cykliczna · anuluj w każdej chwili · Powered by Stripe</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ADMIN ============ -->
+<section class="view" id="admin">
+  <div class="view-head">
+    <div class="view-eyebrow">Panel admina · wewnętrzny</div>
+    <h1 class="view-title">Admin — weryfikacja, kampanie, rozliczenia</h1>
+    <p class="view-lede">Operacyjny panel zespołu AdRide: zarządzanie kierowcami, moderacja dowodów montażu, przegląd kampanii i rozliczenia wypłat.</p>
+  </div>
+
+  <div class="browser">
+    <div class="browser-bar">
+      <div class="browser-dots"><span style="background:#FF5C5C"></span><span style="background:#FFC53D"></span><span style="background:#2DD485"></span></div>
+      <div class="browser-url">admin.adride.pl/kierowcy</div>
+    </div>
+    <div class="browser-body">
+      <aside class="app-side">
+        <div class="side-brand"><span class="dot"></span>AdRide<span style="font-size:10px;color:var(--orange);font-family:var(--f-mono);">admin</span></div>
+        <div class="side-item"><span class="ico">📈</span>Przegląd</div>
+        <div class="side-item active"><span class="ico">🚗</span>Kierowcy</div>
+        <div class="side-item"><span class="ico">📣</span>Kampanie</div>
+        <div class="side-item"><span class="ico">🛡️</span>Moderacja</div>
+        <div class="side-item"><span class="ico">💰</span>Rozliczenia</div>
+        <div class="side-item"><span class="ico">⚙️</span>Ustawienia</div>
+        <div class="side-foot"><div class="avatar" style="background:linear-gradient(135deg,#4C9AFF,#2DD485)">A</div><div style="font-size:12px;"><div style="font-weight:600;">Admin</div><div class="t-sub">ops@adride.pl</div></div></div>
+      </aside>
+      <main class="app-main">
+        <div class="app-topline">
+          <div class="app-h1">Kierowcy</div>
+          <div style="display:flex;gap:10px;"><span class="tag amber">7 oczekuje weryfikacji</span><button class="btn btn-ghost btn-sm">+ Zaproś</button></div>
+        </div>
+        <div class="grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
+          <div class="card pad"><div class="stat-label">Aktywni kierowcy</div><div class="stat-val">42</div></div>
+          <div class="card pad"><div class="stat-label">Do weryfikacji</div><div class="stat-val" style="color:var(--amber)">7</div></div>
+          <div class="card pad"><div class="stat-label">Km dziś (flota)</div><div class="stat-val">3 980</div></div>
+          <div class="card pad"><div class="stat-label">Wypłaty oczekujące</div><div class="stat-val">18 240<span class="u">zł</span></div></div>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <table class="tbl">
+            <thead><tr><th>Kierowca</th><th>Auto</th><th>Kampania</th><th>Km / mies.</th><th>Status</th><th>Dowód</th></tr></thead>
+            <tbody>
+              <tr><td><div class="t-name"><div class="avatar" style="width:28px;height:28px;font-size:11px;">MK</div><div><div style="font-weight:600;">Marek Kowalski</div><div class="t-sub">Mokotów</div></div></div></td><td>Toyota Corolla<div class="t-sub">WX 8842</div></td><td>Pizza Vesuvio</td><td class="mono">2 340</td><td><span class="tag green">Aktywny</span></td><td><span class="tag green">✅ świeży</span></td></tr>
+              <tr><td><div class="t-name"><div class="avatar" style="width:28px;height:28px;font-size:11px;background:linear-gradient(135deg,#4C9AFF,#2DD485)">AN</div><div><div style="font-weight:600;">Anna Nowak</div><div class="t-sub">Wola</div></div></div></td><td>Škoda Octavia<div class="t-sub">WB 1190</div></td><td>Pizza Vesuvio</td><td class="mono">1 980</td><td><span class="tag green">Aktywny</span></td><td><span class="tag amber">⏳ 9 dni</span></td></tr>
+              <tr><td><div class="t-name"><div class="avatar" style="width:28px;height:28px;font-size:11px;background:linear-gradient(135deg,#FFC53D,#FF6B35)">PZ</div><div><div style="font-weight:600;">Piotr Zieliński</div><div class="t-sub">Ursynów</div></div></div></td><td>Kia Ceed<div class="t-sub">WE 4521</div></td><td>—</td><td class="mono">0</td><td><span class="tag amber">Weryfikacja</span></td><td><span class="tag">brak</span></td></tr>
+              <tr><td><div class="t-name"><div class="avatar" style="width:28px;height:28px;font-size:11px;background:linear-gradient(135deg,#FF5C5C,#FF6B35)">KW</div><div><div style="font-weight:600;">Karol Wójcik</div><div class="t-sub">Praga Płd.</div></div></div></td><td>VW Passat<div class="t-sub">WZ 7733</div></td><td>Klinika DentMed</td><td class="mono">3 120</td><td><span class="tag green">Aktywny</span></td><td><span class="tag red">⚠️ odrzucony</span></td></tr>
+              <tr><td><div class="t-name"><div class="avatar" style="width:28px;height:28px;font-size:11px;">TL</div><div><div style="font-weight:600;">Tomasz Lewandowski</div><div class="t-sub">Bemowo</div></div></div></td><td>Hyundai i30<div class="t-sub">WW 2048</div></td><td>Klinika DentMed</td><td class="mono">2 670</td><td><span class="tag green">Aktywny</span></td><td><span class="tag green">✅ świeży</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="row" style="flex-wrap:wrap;gap:28px;">
+    <!-- MODERATION -->
+    <div style="flex:1.2;min-width:380px;">
+      <p class="screens-label">Moderacja dowodów montażu</p>
+      <div class="card pad">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><b style="font-size:14px;">Kolejka do weryfikacji</b><span class="tag amber">5 oczekuje</span></div>
+        <div class="proof-grid" style="grid-template-columns:repeat(3,1fr);">
+          <div class="proof" style="aspect-ratio:1;"><div class="car-silhouette">🚗</div><div class="meta">Marek K. · Mokotów</div></div>
+          <div class="proof" style="aspect-ratio:1;"><div class="car-silhouette">🚗</div><div class="meta">Anna N. · Wola</div></div>
+          <div class="proof" style="aspect-ratio:1;"><div class="car-silhouette">🚗</div><div class="meta">Tomasz L. · Bemowo</div></div>
+        </div>
+        <div class="divider"></div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <div style="width:80px;height:80px;border-radius:10px;background:linear-gradient(135deg,#1A130C,#0F1620);display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0;">🚗</div>
+          <div style="font-size:13px;"><b>Marek Kowalski</b> · Pizza Vesuvio<div class="t-sub" style="margin-top:3px;">📍 Mokotów · 22.06.2026 09:14 · GPS ✓</div><div class="t-sub">Reklama widoczna · tablica czytelna</div></div>
+        </div>
+        <div class="row"><button class="btn btn-ghost btn-full" style="border-color:rgba(255,92,92,.4);color:var(--red);">✕ Odrzuć</button><button class="btn btn-orange btn-full">✓ Zatwierdź dowód</button></div>
+      </div>
+    </div>
+
+    <!-- BILLING -->
+    <div style="flex:1;min-width:320px;">
+      <p class="screens-label">Rozliczenia — wypłaty kierowców</p>
+      <div class="card pad">
+        <div class="kv"><span class="k">Do wypłaty (1 lip)</span><span class="v" style="font-size:16px;color:var(--orange)">18 240 zł</span></div>
+        <div class="kv"><span class="k">Kierowców</span><span class="v">42</span></div>
+        <div class="kv"><span class="k">Wpływy reklamodawców</span><span class="v up">+62 400 zł</span></div>
+        <div class="kv"><span class="k">Prowizja AdRide (12%)</span><span class="v">7 488 zł</span></div>
+        <div class="divider"></div>
+        <p class="screens-label" style="margin-bottom:10px;">Najbliższe wypłaty</p>
+        <div class="kv" style="padding:9px 0;"><div class="t-name"><div class="avatar" style="width:26px;height:26px;font-size:10px;">MK</div>Marek Kowalski</div><span class="v">487 zł</span></div>
+        <div class="kv" style="padding:9px 0;"><div class="t-name"><div class="avatar" style="width:26px;height:26px;font-size:10px;background:linear-gradient(135deg,#4C9AFF,#2DD485)">AN</div>Anna Nowak</div><span class="v">412 zł</span></div>
+        <div class="kv" style="padding:9px 0;"><div class="t-name"><div class="avatar" style="width:26px;height:26px;font-size:10px;background:linear-gradient(135deg,#FF5C5C,#FF6B35)">KW</div>Karol Wójcik</div><span class="v">561 zł</span></div>
+        <button class="btn btn-orange btn-full" style="margin-top:14px;">Uruchom wypłaty Stripe →</button>
+        <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:9px;">Batch przez Stripe Connect · 42 transfery</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById(t.dataset.view).classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+</script>
+</body>
+</html>

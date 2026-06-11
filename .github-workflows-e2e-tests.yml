@@ -1,0 +1,82 @@
+name: 🧪 E2E Tests (Pre-Deploy)
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'kierowca.html'
+      - 'reklamodawca.html'
+      - 'index.html'
+      - 'notte-tests/**'
+      - '.github/workflows/e2e-tests.yml'
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+    name: Driver & Advertiser Flows
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: ./notte-tests
+        run: npm install
+
+      - name: Install Playwright browsers
+        working-directory: ./notte-tests
+        run: npx playwright install --with-deps
+
+      - name: Start HTTP server
+        run: |
+          cd ${{ github.workspace }}
+          python3 -m http.server 3000 > /dev/null 2>&1 &
+          sleep 2
+
+      - name: Run Driver Flow Test
+        working-directory: ./notte-tests
+        run: npm run e2e:driver
+        env:
+          ADRIDE_BASE_URL: http://localhost:3000
+
+      - name: Run Advertiser Flow Test
+        working-directory: ./notte-tests
+        run: npm run e2e:ads
+        env:
+          ADRIDE_BASE_URL: http://localhost:3000
+
+      - name: Run All Tests
+        working-directory: ./notte-tests
+        run: npm run test
+        env:
+          ADRIDE_BASE_URL: http://localhost:3000
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: notte-tests/playwright-report/
+          retention-days: 30
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const testResults = '${{ job.status }}';
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🧪 Test Results\n\n**Status:** ${testResults === 'success' ? '✅ PASSED' : '❌ FAILED'}\n\n[View detailed report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+            })

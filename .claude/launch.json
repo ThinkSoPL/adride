@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "adride-landing",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8080", "--directory", "C:\\Users\\andrz\\Downloads\\AdRide"],
+      "port": 8080
+    }
+  ]
+}

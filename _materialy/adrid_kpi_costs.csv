@@ -1,0 +1,14 @@
+obszar,metryka,wartość/założenie,status
+model,etap projektu,pre-MVP,aktywny
+model,USP,GPS + mierzalność + raportowanie,do walidacji rynkowej
+pricing,pakiet START,997 zł/mies.,robocze
+pricing,pakiet SCALE,2497 zł/mies. 3-5 aut,robocze
+pricing,starsze założenie przychodu,2000-3000 zł/auto/mies.,do ujednolicenia
+driver,starsze założenie wypłaty,1500 zł/mies.,do ujednolicenia
+growth,waiting list kierowców,50,target fazy 2
+pilot,auta aktywne,5-10,target fazy 3
+scale,auta aktywne,50,target fazy 5
+finance,MRR,100000 zł,target fazy 5
+finance,zysk operacyjny,25000 zł/mies.,target fazy 6
+scale,auta aktywne,100,target fazy 6
+tech,koszt MVP infra,120-200 USD/mies.,robocze

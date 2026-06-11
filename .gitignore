@@ -1,0 +1,48 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# builds
+.next/
+out/
+build/
+dist/
+
+# env files (NEVER commit real secrets)
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.local
+**/.env.*.local
+# keep example files tracked:
+!.env.example
+!**/.env.example
+!**/.env.local.example
+
+# misc
+.DS_Store
+*.pem
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+
+# OS / editor
+Thumbs.db
+.idea/
+.vscode/
+
+# Notte tests (node_modules generated locally)
+notte-tests/node_modules/
+notte-tests/dist/
+notte-tests/.auth/
+notte-tests/test-results/
+notte-tests/playwright-report/

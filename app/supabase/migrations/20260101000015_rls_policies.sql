@@ -53,25 +53,13 @@ COMMENT ON TABLE profiles IS 'RLS: SELECT — własny lub admin; UPDATE — wła
 ALTER TABLE drivers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE drivers FORCE ROW LEVEL SECURITY;
 
--- Kierowca widzi własny rekord; admin widzi wszystko;
--- Reklamodawca widzi kierowców przypisanych do jego kampanii (dla widgetów dashboard)
+-- Kierowca widzi własny rekord; admin widzi wszystko
+-- (Reklamodawca widzi kierowców TYLKO poprzez API `/campaigns/{id}/vehicles` na service_role)
 CREATE POLICY drivers_select
   ON drivers FOR SELECT
   USING (
     id = auth.uid()
     OR public.is_admin()
-    OR (
-      public.is_advertiser()
-      AND EXISTS (
-        SELECT 1
-        FROM campaign_vehicles cv
-        JOIN campaigns          c  ON c.id  = cv.campaign_id
-        JOIN vehicles           v  ON v.id  = cv.vehicle_id
-        WHERE c.advertiser_id   = auth.uid()
-          AND v.driver_id       = drivers.id
-          AND cv.removed_at     IS NULL
-      )
-    )
   );
 
 -- Kierowca aktualizuje swoje dane (z wyłączeniem pól admin: status, notes, stripe_*)
@@ -144,23 +132,13 @@ COMMENT ON TABLE advertisers IS 'RLS: SELECT — self/admin; UPDATE — self/adm
 ALTER TABLE vehicles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE vehicles FORCE ROW LEVEL SECURITY;
 
--- Kierowca widzi własne pojazdy; admin widzi wszystko; reklamodawca widzi pojazdy swoich kampanii
+-- Kierowca widzi własne pojazdy; admin widzi wszystko
+-- (Reklamodawca widzi pojazdy TYLKO poprzez API `/campaigns/{id}/vehicles` na service_role)
 CREATE POLICY vehicles_select
   ON vehicles FOR SELECT
   USING (
     driver_id = auth.uid()
     OR public.is_admin()
-    OR (
-      public.is_advertiser()
-      AND EXISTS (
-        SELECT 1
-        FROM campaign_vehicles cv
-        JOIN campaigns         c ON c.id = cv.campaign_id
-        WHERE c.advertiser_id  = auth.uid()
-          AND cv.vehicle_id    = vehicles.id
-          AND cv.removed_at    IS NULL
-      )
-    )
   );
 
 -- Kierowca zarządza własnymi pojazdami
@@ -254,12 +232,10 @@ CREATE POLICY campaign_vehicles_select
       WHERE c.id = campaign_vehicles.campaign_id
         AND c.advertiser_id = auth.uid()
     )
-    OR EXISTS (
-      SELECT 1 FROM vehicles v
-      WHERE v.id = campaign_vehicles.vehicle_id
-        AND v.driver_id = auth.uid()
-    )
   );
+
+-- Kierowca dostęp do campaign_vehicles przez API `/campaigns/{id}/vehicles` (service_role)
+-- nie bezpośrednio przez SELECT na campaign_vehicles
 
 -- Tylko admin i service_role zarządzają przypisaniami pojazdów
 CREATE POLICY campaign_vehicles_insert_admin

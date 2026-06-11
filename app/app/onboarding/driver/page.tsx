@@ -3,18 +3,42 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
+const COMMON_MAKES = [
+  'BMW', 'Audi', 'Mercedes-Benz', 'Toyota', 'Honda', 'Volkswagen',
+  'Skoda', 'Ford', 'Opel', 'Nissan', 'Volvo', 'Alfa Romeo',
+  'Peugeot', 'Renault', 'Hyundai', 'Kia', 'Mazda', 'Suzuki',
+  'Fiat', 'Seat', 'Citroen', 'Dacia', 'Lancia', 'Inne'
+]
+
+const ENGINE_TYPES = [
+  'Benzyna',
+  'Diesel',
+  'Hybryda',
+  'Plug-in hibryda',
+  'Elektryczny',
+  'Wodorowy',
+  'Inne'
+]
+
 export default function DriverOnboardingPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [loggingOut, setLoggingOut] = useState(false)
 
   const [city, setCity] = useState('Warszawa')
   const [plate, setPlate] = useState('')
   const [make, setMake] = useState('')
   const [model, setModel] = useState('')
   const [year, setYear] = useState('')
-  const [color, setColor] = useState('')
+  const [engineType, setEngineType] = useState('')
   const [mileage, setMileage] = useState('')
+
+  async function handleLogout() {
+    setLoggingOut(true)
+    await fetch('/auth/signout', { method: 'POST' })
+    router.push('/login')
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -32,7 +56,7 @@ export default function DriverOnboardingPage() {
             make,
             model,
             year: year ? parseInt(year, 10) : null,
-            color,
+            engine_type: engineType,
             mileage_monthly_estimate: mileage ? parseInt(mileage, 10) : null,
           },
         }),
@@ -56,9 +80,20 @@ export default function DriverOnboardingPage() {
   return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-lg">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-white">Witaj, kierowco! 🚗</h1>
-          <p className="text-gray-400 mt-2">Uzupełnij dane swojego pojazdu, aby zacząć zarabiać</p>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex-1 text-center">
+            <h1 className="text-2xl font-bold text-white">Witaj, kierowco! 🚗</h1>
+            <p className="text-gray-400 mt-2">Uzupełnij dane swojego pojazdu, aby zacząć zarabiać</p>
+          </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="ml-4 px-3 py-2 text-sm text-gray-400 hover:text-white transition disabled:opacity-50"
+            title="Wyloguj się"
+          >
+            ↩ Wyjdź
+          </button>
         </div>
 
         <div className="bg-gray-900 rounded-2xl p-6 md:p-8 border border-gray-800">
@@ -97,21 +132,26 @@ export default function DriverOnboardingPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Marka</label>
-                <input
-                  type="text"
+                <label className="block text-sm font-medium text-gray-300 mb-2">Marka *</label>
+                <select
                   value={make}
                   onChange={e => setMake(e.target.value)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500"
-                  placeholder="Toyota"
-                />
+                  required
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-orange-500"
+                >
+                  <option value="">-- Wybierz --</option>
+                  {COMMON_MAKES.map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Model</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Model *</label>
                 <input
                   type="text"
                   value={model}
                   onChange={e => setModel(e.target.value)}
+                  required
                   className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500"
                   placeholder="Corolla"
                 />
@@ -120,11 +160,12 @@ export default function DriverOnboardingPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Rok</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Rok produkcji *</label>
                 <input
                   type="number"
                   value={year}
                   onChange={e => setYear(e.target.value)}
+                  required
                   min={1990}
                   max={2030}
                   className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500"
@@ -132,14 +173,18 @@ export default function DriverOnboardingPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Kolor</label>
-                <input
-                  type="text"
-                  value={color}
-                  onChange={e => setColor(e.target.value)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500"
-                  placeholder="Biały"
-                />
+                <label className="block text-sm font-medium text-gray-300 mb-2">Typ silnika *</label>
+                <select
+                  value={engineType}
+                  onChange={e => setEngineType(e.target.value)}
+                  required
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-orange-500"
+                >
+                  <option value="">-- Wybierz --</option>
+                  {ENGINE_TYPES.map(t => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
