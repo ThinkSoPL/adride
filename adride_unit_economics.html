@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="pl" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AdRide — Unit Economics Calculator</title>
+<style>
+  /* ══════════════════════════════════════════
+     DESIGN TOKENS — Dark (domyślny)
+  ══════════════════════════════════════════ */
+  :root {
+    --bg-body:       #0d1117;
+    --bg-sidebar:    #161b22;
+    --bg-main:       #0d1117;
+    --bg-card:       linear-gradient(135deg, #1a1a2e, #16213e);
+    --bg-card-solid: #1a1a2e;
+    --bg-control:    #21262d;
+    --bg-row-hover:  #1c2028;
+    --bg-formula:    #1c2028;
+    --bg-bep:        #161b22;
+    --bg-th:         #21262d;
+    --bg-scen-hi:    #0d2818;
+    --bg-status-ok:  #0d2818;
+    --bg-status-warn:#2b1d00;
+    --bg-status-err: #2d0a0a;
+
+    --border:        #30363d;
+    --border-card:   #0f3460;
+    --border-footer: #21262d;
+    --border-section:#21262d;
+
+    --txt-body:      #e6edf3;
+    --txt-muted:     #8b949e;
+    --txt-accent:    #58a6ff;
+    --txt-th:        #8b949e;
+    --txt-bold:      #e6edf3;
+    --txt-formula:   #79c0ff;
+    --txt-label:     #8b949e;
+    --txt-footer:    #484f58;
+    --txt-status-ok: #b5f5d8;
+    --txt-status-warn:#ffe082;
+    --txt-status-err:#ffb3b3;
+
+    --clr-green:     #00d4aa;
+    --clr-red:       #e94560;
+    --clr-blue:      #58a6ff;
+    --clr-pos:       #00d4aa;
+    --clr-neg:       #e94560;
+
+    --brand:         #e94560;
+    --header-grad:   linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+
+    --range-bg:      #4a5568;  /* jaśniejszy dla lepszego kontrastu w dark mode */
+    --select-bg:     #21262d;
+    --select-border: #30363d;
+    --select-txt:    #e6edf3;
+    --radio-bg:      #21262d;
+    --radio-border:  #30363d;
+    --radio-checked-bg: #1c2028;
+
+    --toggle-bg:     #30363d;
+    --toggle-knob:   #e6edf3;
+    --toggle-icon:   "☀️";
+    --shadow:        none;
+  }
+
+  /* ══════════════════════════════════════════
+     DESIGN TOKENS — Light
+  ══════════════════════════════════════════ */
+  [data-theme="light"] {
+    --bg-body:       #f6f8fa;
+    --bg-sidebar:    #ffffff;
+    --bg-main:       #f6f8fa;
+    --bg-card:       linear-gradient(135deg, #eef2ff, #e8f0fe);
+    --bg-card-solid: #eef2ff;
+    --bg-control:    #f6f8fa;
+    --bg-row-hover:  #eef2ff;
+    --bg-formula:    #f0f6ff;
+    --bg-bep:        #ffffff;
+    --bg-th:         #f0f2f5;
+    --bg-scen-hi:    #dafbe1;
+    --bg-status-ok:  #dafbe1;
+    --bg-status-warn:#fff8c5;
+    --bg-status-err: #ffebe9;
+
+    --border:        #d1d9e0;
+    --border-card:   #b0c4de;
+    --border-footer: #d1d9e0;
+    --border-section:#d1d9e0;
+
+    --txt-body:      #1f2328;
+    --txt-muted:     #57606a;
+    --txt-accent:    #0969da;
+    --txt-th:        #57606a;
+    --txt-bold:      #1f2328;
+    --txt-formula:   #0550ae;
+    --txt-label:     #57606a;
+    --txt-footer:    #8c959f;
+    --txt-status-ok: #1a4731;
+    --txt-status-warn:#6e4c00;
+    --txt-status-err:#6e1717;
+
+    --clr-green:     #1a7f37;
+    --clr-red:       #cf222e;
+    --clr-blue:      #0969da;
+    --clr-pos:       #1a7f37;
+    --clr-neg:       #cf222e;
+
+    --brand:         #e94560;
+    --header-grad:   linear-gradient(135deg, #0f3460 0%, #1e4080 100%);
+
+    --range-bg:      #d1d9e0;
+    --select-bg:     #ffffff;
+    --select-border: #d1d9e0;
+    --select-txt:    #1f2328;
+    --radio-bg:      #ffffff;
+    --radio-border:  #d1d9e0;
+    --radio-checked-bg: #f0f6ff;
+
+    --toggle-bg:     #0969da;
+    --toggle-knob:   #ffffff;
+    --shadow:        0 1px 3px rgba(0,0,0,.12);
+  }
+
+  /* ══════════════════════════════════════════
+     RESET & BASE
+  ══════════════════════════════════════════ */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: var(--bg-body);
+    color: var(--txt-body);
+    min-height: 100vh;
+    transition: background .25s, color .25s;
+  }
+
+  /* ══════════════════════════════════════════
+     HEADER
+  ══════════════════════════════════════════ */
+  header {
+    background: var(--header-grad);
+    padding: 16px 32px;
+    display: flex; align-items: center; gap: 16px;
+    border-bottom: 2px solid var(--brand);
+    position: sticky; top: 0; z-index: 100;
+  }
+  header h1 { font-size: 1.5rem; color: #fff; }
+
+  /* ── Theme Toggle ── */
+  .theme-toggle {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .theme-toggle-label {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,.7);
+    user-select: none;
+    white-space: nowrap;
+  }
+  .toggle-switch {
+    position: relative; width: 48px; height: 26px;
+    cursor: pointer;
+  }
+  .toggle-switch input { display: none; }
+  .toggle-track {
+    position: absolute; inset: 0;
+    background: var(--toggle-bg);
+    border-radius: 13px;
+    transition: background .25s;
+    display: flex; align-items: center;
+    padding: 0 4px;
+  }
+  .toggle-track::before {
+    content: '';  /* emoji usunięte — jest w labelu */
+  }
+  .toggle-knob {
+    position: absolute;
+    width: 20px; height: 20px;
+    background: var(--toggle-knob);
+    border-radius: 50%;
+    top: 3px; left: 3px;
+    transition: transform .25s, background .25s;
+    box-shadow: 0 1px 3px rgba(0,0,0,.3);
+  }
+  /* Checked = light mode */
+  .toggle-switch input:checked ~ .toggle-knob { transform: translateX(22px); }
+
+  #model-badge {
+    background: var(--brand);
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  /* ══════════════════════════════════════════
+     LAYOUT
+  ══════════════════════════════════════════ */
+  .layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 0;
+    min-height: calc(100vh - 70px);
+  }
+
+  /* ══════════════════════════════════════════
+     SIDEBAR
+  ══════════════════════════════════════════ */
+  .sidebar {
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border);
+    padding: 20px 18px;
+    overflow-y: auto;
+    box-shadow: var(--shadow);
+    transition: background .25s, border-color .25s;
+  }
+  .sidebar h2 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--brand);
+    letter-spacing: 1px;
+    margin: 18px 0 10px;
+  }
+  .sidebar h2:first-child { margin-top: 0; }
+
+  .control-group { margin-bottom: 14px; }
+  .control-group label {
+    display: flex; justify-content: space-between;
+    font-size: 0.82rem; color: var(--txt-muted); margin-bottom: 5px;
+  }
+  .control-group label span { color: var(--txt-accent); font-weight: 600; }
+
+  input[type=range] {
+    width: 100%; height: 4px;
+    accent-color: var(--brand);
+    cursor: pointer;
+    background: var(--range-bg);
+    border-radius: 2px;
+    transition: background .25s;
+  }
+
+  select, .radio-group {
+    width: 100%;
+    background: var(--select-bg);
+    border: 1px solid var(--select-border);
+    color: var(--select-txt);
+    padding: 7px 10px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: background .25s, border-color .25s, color .25s;
+  }
+  .radio-group {
+    padding: 0; border: none;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .radio-group label {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--radio-bg);
+    border: 1px solid var(--radio-border);
+    padding: 8px 10px; border-radius: 6px; cursor: pointer;
+    font-size: 0.82rem; color: var(--txt-body); font-weight: normal;
+    transition: border-color .2s, background .25s;
+    justify-content: flex-start;
+  }
+  .radio-group label:hover { border-color: var(--brand); }
+  .radio-group input[type=radio]:checked + span { color: var(--brand); font-weight: 600; }
+  .radio-group label:has(input:checked) {
+    border-color: var(--brand);
+    background: var(--radio-checked-bg);
+  }
+
+  /* ══════════════════════════════════════════
+     MAIN
+  ══════════════════════════════════════════ */
+  .main {
+    padding: 24px 28px;
+    overflow-y: auto;
+    background: var(--bg-main);
+    transition: background .25s;
+  }
+
+  /* ── KPI CARDS ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px; margin-bottom: 24px;
+  }
+  .kpi-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    border-radius: 12px; padding: 18px; text-align: center;
+    box-shadow: var(--shadow);
+    transition: background .25s, border-color .25s;
+  }
+  .kpi-value { font-size: 1.6rem; font-weight: 700; }
+  .kpi-value.green { color: var(--clr-green); }
+  .kpi-value.red   { color: var(--clr-red); }
+  .kpi-value.blue  { color: var(--clr-blue); }
+  .kpi-label { font-size: 0.75rem; color: var(--txt-muted); margin-top: 4px; }
+
+  /* ── STATUS BAR ── */
+  .status-bar {
+    padding: 12px 18px; border-radius: 8px; margin-bottom: 24px;
+    font-size: 0.88rem; border-left: 4px solid;
+    transition: background .25s, color .25s;
+  }
+  .status-bar.success {
+    background: var(--bg-status-ok);
+    border-color: var(--clr-green);
+    color: var(--txt-status-ok);
+  }
+  .status-bar.warning {
+    background: var(--bg-status-warn);
+    border-color: #ffc107;
+    color: var(--txt-status-warn);
+  }
+  .status-bar.danger {
+    background: var(--bg-status-err);
+    border-color: var(--clr-red);
+    color: var(--txt-status-err);
+  }
+
+  /* ── SECTION HEADER ── */
+  .section-title {
+    font-size: 0.85rem; font-weight: 700;
+    color: var(--txt-muted);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin: 24px 0 12px; padding-bottom: 6px;
+    border-bottom: 1px solid var(--border-section);
+    transition: color .25s, border-color .25s;
+  }
+
+  /* ── TABLE ── */
+  .table-wrap { overflow-x: auto; margin-bottom: 24px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+  th {
+    background: var(--bg-th);
+    color: var(--txt-th);
+    padding: 9px 14px; text-align: left;
+    font-weight: 600; font-size: 0.75rem; text-transform: uppercase;
+    transition: background .25s, color .25s;
+  }
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--txt-body);
+    transition: background .1s, color .25s, border-color .25s, background-color .25s;
+  }
+  tr:hover td { background: var(--bg-row-hover); }
+  td.pos  { color: var(--clr-pos); font-weight: 600; }
+  td.neg  { color: var(--clr-neg); }
+  td.bold { font-weight: 700; color: var(--txt-bold); }
+
+  /* ── TWO COLUMNS ── */
+  .two-col {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 20px; margin-bottom: 24px;
+  }
+
+  /* ── FORMULA BOX ── */
+  .formula-box {
+    background: var(--bg-formula);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px;
+    font-family: monospace; font-size: 0.8rem;
+    color: var(--txt-formula); line-height: 1.8;
+    margin-bottom: 16px;
+    transition: background .25s, border-color .25s, color .25s;
+  }
+  .formula-box .label { color: var(--txt-label); }
+
+  /* ── SCENARIO HIGHLIGHT ── */
+  .scenario-highlight { background: var(--bg-scen-hi) !important; }
+
+  /* ── BEP CARDS ── */
+  .bep-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 14px; margin-bottom: 24px;
+  }
+  .bep-card {
+    background: var(--bg-bep);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; text-align: center;
+    box-shadow: var(--shadow);
+    transition: background .25s, border-color .25s;
+  }
+  .bep-card .val { font-size: 1.4rem; font-weight: 700; color: var(--clr-blue); }
+  .bep-card .lbl { font-size: 0.75rem; color: var(--txt-muted); margin-top: 4px; }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center; padding: 16px;
+    font-size: 0.75rem;
+    color: var(--txt-footer);
+    border-top: 1px solid var(--border-footer);
+    transition: color .25s, border-color .25s;
+  }
+
+  /* ══════════════════════════════════════════
+     RESPONSIVE
+  ══════════════════════════════════════════ */
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .kpi-grid { grid-template-columns: repeat(2,1fr); }
+    .two-col { grid-template-columns: 1fr; }
+    .bep-grid { grid-template-columns: repeat(2,1fr); }
+  }
+
+  @media (max-width: 600px) {
+    header {
+      padding: 10px 14px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    header > div:first-child { font-size: 1.4rem; }   /* ikona */
+    header > div:nth-child(2) { flex: 1 1 auto; }     /* blok tytułu */
+    header h1 { font-size: 1rem; }
+    header > div:nth-child(2) > div { display: none; } /* ukryj subtitle */
+    /* badge + toggle przechodzą do 2. rzędu */
+    #model-badge  { order: 10; margin-left: 0; font-size: 0.72rem; padding: 3px 9px; }
+    .theme-toggle { order: 11; margin-left: auto; gap: 6px; }
+    .theme-toggle-label { display: none; }             /* tylko ikonka toggle */
+    /* main i karty */
+    .main { padding: 16px 14px; }
+    .kpi-grid { grid-template-columns: repeat(2,1fr); gap: 8px; }
+    .kpi-value { font-size: 1.2rem; }
+    .bep-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="font-size:1.8rem">🚗</div>
+  <div>
+    <h1>AdRide — Unit Economics Calculator</h1>
+    <div style="font-size:0.78rem;color:rgba(255,255,255,.6);">Platforma łącząca kierowców z reklamodawcami | Think Social © 2026</div>
+  </div>
+
+  <span id="model-badge">Subskrypcyjny</span>
+
+  <div class="theme-toggle">
+    <span class="theme-toggle-label" id="toggle-label">🌙 Ciemny</span>
+    <label class="toggle-switch" title="Przełącz tryb jasny / ciemny">
+      <input type="checkbox" id="theme-checkbox">
+      <span class="toggle-track"></span>
+      <span class="toggle-knob"></span>
+    </label>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+
+    <h2>🚘 Flota</h2>
+    <div class="control-group">
+      <label>Liczba aut <span id="v-cars">10</span></label>
+      <input type="range" id="num-cars" min="1" max="100" value="10">
+    </div>
+    <div class="control-group">
+      <label>Kilometry / auto / mies. <span id="v-km">1 000 km</span></label>
+      <input type="range" id="km-per-month" min="200" max="10000" step="100" value="1000">
+    </div>
+    <div class="control-group">
+      <label>% km pozamiejskich (&gt;50 km/h) <span id="v-highway">30%</span></label>
+      <input type="range" id="highway-share" min="0" max="100" step="5" value="30">
+    </div>
+    <div class="control-group">
+      <label>Wartość auta <span id="v-car-val">200 000 zł</span></label>
+      <input type="range" id="car-value" min="50000" max="600000" step="10000" value="200000">
+    </div>
+    <div class="control-group">
+      <label>Czas kampanii <span id="v-months">6 mies.</span></label>
+      <input type="range" id="campaign-months" min="1" max="24" value="6">
+    </div>
+
+    <h2>👤 Kierowca</h2>
+    <div class="control-group">
+      <label>Stawka kierowcy / km miejski <span id="v-driver-rate">0,60 zł/km</span></label>
+      <input type="range" id="driver-rate" min="0.10" max="2.00" step="0.05" value="0.60">
+    </div>
+    <div class="control-group">
+      <label>Stawka kierowcy / km pozamiejski <span id="v-driver-rate-hw">0,25 zł/km</span></label>
+      <input type="range" id="driver-rate-hw" min="0.05" max="1.00" step="0.05" value="0.25">
+    </div>
+    <div class="control-group">
+      <label style="justify-content:flex-start;margin-bottom:8px;">Wielkość oklejenia</label>
+      <select id="wrap-size">
+        <option value="1.0">Całe auto (100%)</option>
+        <option value="0.5">Drzwi i tył — pół (50%)</option>
+        <option value="0.3">Naklejki na drzwi (30%)</option>
+      </select>
+    </div>
+
+    <h2>📦 Model kampanii</h2>
+    <div class="control-group">
+      <div class="radio-group">
+        <label><input type="radio" name="model" value="sub" checked><span>Subskrypcyjny (reklamodawca organizuje oklejenie)</span></label>
+        <label><input type="radio" name="model" value="abo"><span>Abonamentowy (AdRide organizuje oklejenie)</span></label>
+      </div>
+    </div>
+
+    <div id="wrap-costs-section">
+      <div class="control-group">
+        <label>Koszt oklejenia / auto <span id="v-wrap-cost">8 000 zł</span></label>
+        <input type="range" id="wrap-cost" min="2000" max="15000" step="500" value="8000">
+      </div>
+      <div class="control-group">
+        <label>Koszt demontażu / auto <span id="v-unwrap-cost">1 200 zł</span></label>
+        <input type="range" id="unwrap-cost" min="500" max="3000" step="100" value="1200">
+      </div>
+      <div class="control-group">
+        <label>Narzut Abonamentu (vs Subskrypcja) <span id="v-abo-uplift">85%</span></label>
+        <input type="range" id="abo-uplift" min="0" max="250" step="5" value="85">
+      </div>
+    </div>
+
+    <h2>💰 Pricing</h2>
+    <div class="control-group">
+      <label>Marża docelowa <span id="v-margin">30%</span></label>
+      <input type="range" id="target-margin" min="5" max="70" value="30">
+    </div>
+    <div class="control-group">
+      <label>Stawka reklamodawcy / km miejski <span id="v-adv-rate">1,20 zł/km</span></label>
+      <input type="range" id="adv-rate" min="0.30" max="4.00" step="0.10" value="1.20">
+    </div>
+    <div class="control-group">
+      <label>Stawka reklamodawcy / km pozamiejski <span id="v-adv-rate-hw">0,50 zł/km</span></label>
+      <input type="range" id="adv-rate-hw" min="0.10" max="2.00" step="0.10" value="0.50">
+    </div>
+    <div class="control-group">
+      <label>Współczynnik prestiżu <span id="v-prestige">0,30</span></label>
+      <input type="range" id="prestige" min="0" max="0.40" step="0.05" value="0.30">
+    </div>
+
+    <h2>🔒 Koszty stałe</h2>
+    <div class="control-group">
+      <label>Audyt prawny (zł netto) <span id="v-legal">15 000 zł</span></label>
+      <input type="range" id="legal-cost" min="5000" max="50000" step="1000" value="15000">
+    </div>
+    <div class="control-group">
+      <label>Koszty ops. platformy / mies. <span id="v-ops">2 000 zł</span></label>
+      <input type="range" id="ops-cost" min="500" max="10000" step="250" value="2000">
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-value green" id="kpi-net-profit">—</div>
+        <div class="kpi-label">Zysk netto platformy / mies.</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value blue" id="kpi-adv-cost">—</div>
+        <div class="kpi-label">Koszt całkowity reklamodawcy</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value green" id="kpi-bep">—</div>
+        <div class="kpi-label">Break-even (pokrycie audytu)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value" id="kpi-margin">—</div>
+        <div class="kpi-label" id="kpi-margin-label">Marża brutto (cel: 30%)</div>
+      </div>
+    </div>
+
+    <!-- STATUS -->
+    <div class="status-bar" id="status-bar">Obliczanie...</div>
+
+    <!-- WATERFALL -->
+    <div class="section-title">💧 Waterfall — przepływ gotówki / mies.</div>
+    <div class="table-wrap">
+      <table id="waterfall-table">
+        <thead><tr><th>Pozycja</th><th>Kwota (zł/mies.)</th><th>%</th></tr></thead>
+        <tbody id="waterfall-body"></tbody>
+      </table>
+    </div>
+
+    <!-- BEP -->
+    <div class="section-title">🎯 Break-Even — pokrycie audytu prawnego 15 000 zł</div>
+    <div class="bep-grid">
+      <div class="bep-card"><div class="val" id="bep-cars">—</div><div class="lbl">Min. aut do BEP audytu</div></div>
+      <div class="bep-card"><div class="val" id="bep-months-audit">—</div><div class="lbl">Mies. do BEP audytu</div></div>
+      <div class="bep-card"><div class="val" id="bep-months-full">—</div><div class="lbl">Pokrycie kosztów stałych</div></div>
+    </div>
+
+    <!-- DETAILS -->
+    <div class="two-col">
+      <div>
+        <div class="section-title">🚘 Kalkulacja wynagrodzenia kierowcy</div>
+        <div class="formula-box" id="driver-formula">—</div>
+        <div class="section-title">💼 Pricing reklamodawcy</div>
+        <div class="formula-box" id="pricing-formula">—</div>
+      </div>
+      <div>
+        <div class="section-title">📊 P&L / auto / mies.</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Pozycja</th><th>Kwota</th></tr></thead>
+            <tbody id="unit-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIOS -->
+    <div class="section-title">📈 Scenariusze — wpływ liczby aut</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Aut</th><th>Przychód / mies.</th><th>Koszty zm.</th><th>Zysk netto</th><th>Marża %</th><th>BEP audytu</th></tr></thead>
+        <tbody id="scenario-table"></tbody>
+      </table>
+    </div>
+
+    <!-- SENSITIVITY -->
+    <div class="section-title">🏷️ Wrażliwość na km / mies.</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>km / mies.</th><th>Payout kierowcy</th><th>Przychód platf.</th><th>Marża brutto / auto</th><th>Marża %</th></tr></thead>
+        <tbody id="sensitivity-table"></tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<footer>AdRide Unit Economics Calculator &nbsp;|&nbsp; Think Social © 2026 &nbsp;|&nbsp; v1.1</footer>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// THEME TOGGLE
+// ══════════════════════════════════════════════════════════════════
+const html        = document.documentElement;
+const checkbox    = document.getElementById('theme-checkbox');
+const toggleLabel = document.getElementById('toggle-label');
+
+function applyTheme(isLight) {
+  html.setAttribute('data-theme', isLight ? 'light' : 'dark');
+  checkbox.checked        = isLight;
+  toggleLabel.textContent = isLight ? '☀️ Jasny' : '🌙 Ciemny';
+  localStorage.setItem('adride-theme', isLight ? 'light' : 'dark');
+}
+
+// Restore saved preference (or respect OS preference as fallback)
+(function () {
+  const saved = localStorage.getItem('adride-theme');
+  if (saved) {
+    applyTheme(saved === 'light');
+  } else {
+    applyTheme(window.matchMedia('(prefers-color-scheme: light)').matches);
+  }
+})();
+
+checkbox.addEventListener('change', () => applyTheme(checkbox.checked));
+
+// ══════════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════════
+const fmt  = (n, d=0) => new Intl.NumberFormat('pl-PL', {minimumFractionDigits:d, maximumFractionDigits:d}).format(n) + ' zł';
+const fmtN = (n, d=0) => new Intl.NumberFormat('pl-PL', {minimumFractionDigits:d, maximumFractionDigits:d}).format(n);
+const fmtPct = n => n.toFixed(1) + '%';
+const REF_CAR = 200_000;
+
+// ══════════════════════════════════════════════════════════════════
+// BIND SLIDERS
+// ══════════════════════════════════════════════════════════════════
+function bindSlider(id, displayId, formatter) {
+  const el      = document.getElementById(id);
+  const display = document.getElementById(displayId);
+  el.addEventListener('input', () => { display.textContent = formatter(+el.value); compute(); });
+  display.textContent = formatter(+el.value);
+}
+
+bindSlider('num-cars',        'v-cars',       v => v + ' aut');
+bindSlider('km-per-month',    'v-km',         v => fmtN(v) + ' km');
+bindSlider('highway-share',   'v-highway',    v => v + '%');
+bindSlider('car-value',       'v-car-val',    v => fmtN(v) + ' zł');
+bindSlider('campaign-months', 'v-months',     v => v + ' mies.');
+bindSlider('driver-rate',     'v-driver-rate',v => fmtN(v,2) + ' zł/km');
+bindSlider('driver-rate-hw',  'v-driver-rate-hw', v => fmtN(v,2) + ' zł/km');
+bindSlider('target-margin',   'v-margin',     v => v + '%');
+bindSlider('adv-rate',        'v-adv-rate',   v => fmtN(v,2) + ' zł/km');
+bindSlider('adv-rate-hw',     'v-adv-rate-hw',v => fmtN(v,2) + ' zł/km');
+bindSlider('prestige',        'v-prestige',   v => fmtN(v,2));
+bindSlider('legal-cost',      'v-legal',      v => fmtN(v) + ' zł');
+bindSlider('ops-cost',        'v-ops',        v => fmtN(v) + ' zł');
+bindSlider('wrap-cost',       'v-wrap-cost',  v => fmtN(v) + ' zł');
+bindSlider('unwrap-cost',     'v-unwrap-cost',v => fmtN(v) + ' zł');
+bindSlider('abo-uplift',      'v-abo-uplift', v => v + '%');
+
+document.getElementById('wrap-size').addEventListener('change', compute);
+
+document.querySelectorAll('input[name="model"]').forEach(r => r.addEventListener('change', () => {
+  const isAbo = document.querySelector('input[name="model"]:checked').value === 'abo';
+  document.getElementById('wrap-costs-section').style.display = isAbo ? 'block' : 'none';
+  document.getElementById('model-badge').textContent = isAbo ? 'Abonamentowy' : 'Subskrypcyjny';
+  // ABO: minimalny abonament 12 miesięcy
+  const monthsEl = document.getElementById('campaign-months');
+  monthsEl.min = isAbo ? 12 : 1;
+  if (isAbo && +monthsEl.value < 12) { monthsEl.value = 12; document.getElementById('v-months').textContent = '12 mies.'; }
+  compute();
+}));
+document.getElementById('wrap-costs-section').style.display = 'none';
+
+// ══════════════════════════════════════════════════════════════════
+// CORE CALC
+// ══════════════════════════════════════════════════════════════════
+function getInputs() {
+  return {
+    numCars:      +document.getElementById('num-cars').value,
+    kmPerMonth:   +document.getElementById('km-per-month').value,
+    highwayShare: +document.getElementById('highway-share').value / 100,
+    carValue:     +document.getElementById('car-value').value,
+    months:       +document.getElementById('campaign-months').value,
+    driverRate:   +document.getElementById('driver-rate').value,
+    driverRateHw: +document.getElementById('driver-rate-hw').value,
+    wrapFactor:   +document.getElementById('wrap-size').value,
+    isAbo:        document.querySelector('input[name="model"]:checked').value === 'abo',
+    wrapCost:     +document.getElementById('wrap-cost').value,
+    unwrapCost:   +document.getElementById('unwrap-cost').value,
+    aboUplift:    +document.getElementById('abo-uplift').value / 100,
+    targetMargin: +document.getElementById('target-margin').value,
+    advRate:      +document.getElementById('adv-rate').value,
+    advRateHw:    +document.getElementById('adv-rate-hw').value,
+    prestigeCoeff:+document.getElementById('prestige').value,
+    legalCost:    +document.getElementById('legal-cost').value,
+    opsCost:      +document.getElementById('ops-cost').value,
+  };
+}
+
+function calcUnit(p, numCars) {
+  const aboMonths      = Math.max(p.months, 12);   // ABO: minimum 12 miesięcy
+  const hw             = p.highwayShare;           // udział km pozamiejskich (0..1)
+  const driverBlend    = p.driverRate * (1 - hw) + p.driverRateHw * hw;   // mix miejska/pozamiejska
+  const advBlend       = p.advRate    * (1 - hw) + p.advRateHw    * hw;
+  const carFactor      = p.carValue / REF_CAR;
+  const prestigeFactor = 1.0 + (carFactor - 1.0) * p.prestigeCoeff;   // symetryczny: revenue + payout
+  const driverPayout   = p.kmPerMonth * driverBlend * prestigeFactor * p.wrapFactor;
+  const revenue        = p.kmPerMonth * advBlend    * prestigeFactor * (p.isAbo ? (1 + p.aboUplift) : 1);
+
+  const wrapAmort   = p.isAbo ? p.wrapCost   / aboMonths : 0;
+  const unwrapAmort = p.isAbo ? p.unwrapCost / aboMonths : 0;
+  const varCost     = driverPayout + wrapAmort + unwrapAmort;
+
+  const grossMargin    = revenue - varCost;
+  const grossMarginPct = revenue > 0 ? grossMargin / revenue * 100 : 0;
+
+  const totalRev   = revenue * numCars;
+  const totalVar   = varCost * numCars;
+  const fixedMonth = p.opsCost;  // legal cost is one-time startup, not monthly
+  const netProfit  = totalRev - totalVar - fixedMonth;
+  const netMarginPct = totalRev > 0 ? netProfit / totalRev * 100 : 0;
+
+  // POPRAWKA: Abo = oklejenie absorbowane w marży AdRide (brak dopłaty reklamodawcy)
+  //           Sub = reklamodawca płaci za oklejenie osobno poza platformą
+  const advTotal = p.isAbo
+    ? revenue * numCars * p.months
+    : revenue * numCars * p.months + (p.wrapCost + p.unwrapCost) * numCars;
+
+  // BEP
+  const monthlyContrib = totalRev - totalVar - p.opsCost;
+  const bepCarsAudit   = (() => {
+    // Solve for n: (revenue - varCost(n)) * n - opsCost >= legalCost / months * months
+    // Approximate: use current varCost (linear)
+    const unitContrib = revenue - varCost;
+    if (unitContrib <= 0) return Infinity;
+    return Math.ceil(p.legalCost / (unitContrib * p.months - p.opsCost / numCars * p.months));
+  })();
+
+  const bepMonthsAudit = monthlyContrib > 0 ? p.legalCost / monthlyContrib : Infinity;
+  // Pokrycie kosztów stałych: ile % miesięcznego zysku brutto zajmują koszty stałe
+  const fixedCoverage  = (totalRev - totalVar) > 0 ? fixedMonth / (totalRev - totalVar) : Infinity;
+
+  return {
+    carFactor, driverPayout, prestigeFactor, revenue, driverBlend, advBlend,
+    wrapAmort, unwrapAmort, varCost,
+    grossMargin, grossMarginPct,
+    totalRev, totalVar, fixedMonth, netProfit, netMarginPct,
+    advTotal, bepCarsAudit, bepMonthsAudit, fixedCoverage,
+  };
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════════════════════
+function compute() {
+  const p = getInputs();
+  const r = calcUnit(p, p.numCars);
+
+  // ── KPI ──
+  const kpiNet = document.getElementById('kpi-net-profit');
+  kpiNet.textContent = fmt(r.netProfit);
+  kpiNet.className = 'kpi-value ' + (r.netProfit >= 0 ? 'green' : 'red');
+
+  document.getElementById('kpi-adv-cost').textContent = fmt(r.advTotal);
+
+  const bepDisp = r.bepMonthsAudit === Infinity ? '❌ N/A' : r.bepMonthsAudit.toFixed(1) + ' mies.';
+  document.getElementById('kpi-bep').textContent = bepDisp;
+
+  const kpiMargin = document.getElementById('kpi-margin');
+  kpiMargin.textContent = fmtPct(r.grossMarginPct);
+  kpiMargin.className = 'kpi-value ' + (r.grossMarginPct >= p.targetMargin ? 'green' : 'red');
+  document.getElementById('kpi-margin-label').textContent = `Marża brutto (cel: ${p.targetMargin}%)`;
+
+  // ── STATUS ──
+  const bar = document.getElementById('status-bar');
+  if (r.netProfit > 0 && r.grossMarginPct >= p.targetMargin) {
+    bar.className = 'status-bar success';
+    bar.innerHTML = `✅ <strong>Kampania rentowna</strong> — zysk netto ${fmt(r.netProfit)}/mies. Marża brutto ${fmtPct(r.grossMarginPct)} ≥ cel ${p.targetMargin}%.`;
+  } else if (r.netProfit > 0) {
+    bar.className = 'status-bar warning';
+    bar.innerHTML = `⚠️ <strong>Kampania zyskowna, ale marża poniżej celu</strong> — zysk ${fmt(r.netProfit)}/mies. Marża brutto ${fmtPct(r.grossMarginPct)} &lt; cel ${p.targetMargin}%. Rozważ podniesienie stawki reklamodawcy.`;
+  } else {
+    bar.className = 'status-bar danger';
+    bar.innerHTML = `🔴 <strong>Kampania deficytowa</strong> — strata ${fmt(Math.abs(r.netProfit))}/mies. Zwiększ liczbę aut lub podnieś budżet reklamodawcy.`;
+  }
+
+  // ── WATERFALL ──
+  const wfRows = [
+    { label: `📈 Przychód (${p.numCars} aut)`, val: r.totalRev },
+    { label: '📉 Wypłata kierowców', val: -r.driverPayout * p.numCars },
+    p.isAbo ? { label: '📉 Oklejenie (amortyzacja)', val: -r.wrapAmort * p.numCars }   : null,
+    p.isAbo ? { label: '📉 Demontaż (amortyzacja)',  val: -r.unwrapAmort * p.numCars } : null,
+    { label: '📉 Koszty ops. platformy', val: -p.opsCost },
+    { label: r.netProfit >= 0 ? '✅ ZYSK OPERACYJNY' : '🔴 STRATA OPERACYJNA', val: r.netProfit, bold: true },
+  ].filter(Boolean);
+
+  document.getElementById('waterfall-body').innerHTML = wfRows.map(row => {
+    const isPos = row.val >= 0;
+    const cls   = row.bold ? 'bold' : (isPos ? 'pos' : 'neg');
+    const pct   = r.totalRev > 0 ? (row.val / r.totalRev * 100).toFixed(1) + '%' : '—';
+    return `<tr><td>${row.label}</td><td class="${cls}">${fmt(row.val)}</td><td class="${cls}">${pct}</td></tr>`;
+  }).join('');
+
+  // ── BEP CARDS ──
+  document.getElementById('bep-cars').textContent =
+    (r.bepCarsAudit === Infinity || !isFinite(r.bepCarsAudit)) ? 'N/A' : r.bepCarsAudit + ' aut';
+  document.getElementById('bep-months-audit').textContent =
+    r.bepMonthsAudit === Infinity ? 'N/A' : r.bepMonthsAudit.toFixed(1) + ' mies.';
+  document.getElementById('bep-months-full').textContent =
+    r.fixedCoverage === Infinity ? 'N/A' : fmtPct(r.fixedCoverage * 100);
+
+  // ── DRIVER FORMULA ──
+  document.getElementById('driver-formula').innerHTML =
+    `<span class="label">Kilometry / mies.:</span>  ${fmtN(p.kmPerMonth)} km (${(p.highwayShare*100).toFixed(0)}% pozamiejskie)<br>` +
+    `<span class="label">Stawka kier. (mia/poza):</span> ${fmtN(p.driverRate,2)} / ${fmtN(p.driverRateHw,2)} zł/km → mix ${fmtN(r.driverBlend,2)} zł/km<br>` +
+    `<span class="label">Wartość auta:</span>      ${fmtN(p.carValue)} zł  →  prestiż x${r.prestigeFactor.toFixed(2)}<br>` +
+    `<span class="label">Oklejenie:</span>         x${p.wrapFactor.toFixed(2)}<br>` +
+    `─────────────────────────────<br>` +
+    `<span class="label">Payout / auto / mies.:</span>  <strong style="color:var(--clr-green)">${fmt(r.driverPayout)}</strong><br>` +
+    `<span class="label">Payout łącznie / mies.:</span> <strong style="color:var(--clr-green)">${fmt(r.driverPayout * p.numCars)}</strong>`;
+
+  document.getElementById('pricing-formula').innerHTML =
+    `<span class="label">Kilometry / mies.:</span>  ${fmtN(p.kmPerMonth)} km<br>` +
+    `<span class="label">Stawka rekl. (mia/poza):</span> ${fmtN(p.advRate,2)} / ${fmtN(p.advRateHw,2)} zł/km → mix ${fmtN(r.advBlend,2)} zł/km<br>` +
+    (p.isAbo ? `<span class="label">Narzut ABO:</span> +${(p.aboUplift*100).toFixed(0)}% (oklejenie+logistyka)<br>` : ``) +
+    `<span class="label">Prestiż floty:</span>    +${((r.prestigeFactor-1)*100).toFixed(1)}%  →  x${r.prestigeFactor.toFixed(2)}<br>` +
+    `<span class="label">Przychód platf.:</span>  ${fmt(r.revenue)} / auto / mies.<br>` +
+    `─────────────────────────────<br>` +
+    `<span class="label">Łączny koszt reklamodawcy:</span> <strong style="color:var(--clr-blue)">${fmt(r.advTotal)}</strong><br>` +
+    (p.isAbo
+      ? `<span class="label">Oklejenie:</span> wliczone w usługę AdRide (absorbowane w marży)`
+      : `<span class="label">w tym oklejenie+demontaż:</span> ${fmt((p.wrapCost + p.unwrapCost) * p.numCars)} (poza platformą)`);
+
+  // ── UNIT P&L TABLE ──
+  const unitRows = [
+    { label: 'Przychód (revenue)',  val: r.revenue,         cls: 'pos' },
+    { label: 'Payout kierowcy',     val: -r.driverPayout,   cls: 'neg' },
+    p.isAbo ? { label: 'Oklejenie (amort.)',  val: -r.wrapAmort,    cls: 'neg' } : null,
+    p.isAbo ? { label: 'Demontaż (amort.)',   val: -r.unwrapAmort,  cls: 'neg' } : null,
+    { label: 'Marża brutto',        val: r.grossMargin,     cls: r.grossMargin >= 0 ? 'pos bold' : 'neg bold' },
+    { label: 'Ops. platforma / auto', val: -p.opsCost / p.numCars, cls: 'neg' },
+    { label: 'Marża operacyjna / auto', val: r.netProfit / p.numCars, cls: r.netProfit / p.numCars >= 0 ? 'pos bold' : 'neg bold' },
+  ].filter(Boolean);
+
+  document.getElementById('unit-table').innerHTML = unitRows.map(row =>
+    `<tr><td>${row.label}</td><td class="${row.cls}">${fmt(row.val)}</td></tr>`
+  ).join('');
+
+  // ── SCENARIOS TABLE ──
+  const scenCars = [1, 3, 5, 10, 20, 30, 50, 75, 100];
+  document.getElementById('scenario-table').innerHTML = scenCars.map(n => {
+    const s   = calcUnit(p, n);
+    const hi  = n === p.numCars ? 'class="scenario-highlight"' : '';
+    const cls = s.netProfit >= 0 ? 'pos' : 'neg';
+    const bep = s.bepMonthsAudit === Infinity ? 'N/A' : s.bepMonthsAudit.toFixed(1) + ' mies.';
+    return `<tr ${hi}>
+      <td class="bold">${n}</td>
+      <td>${fmt(s.totalRev)}</td>
+      <td class="neg">${fmt(-s.totalVar)}</td>
+      <td class="${cls}">${fmt(s.netProfit)}</td>
+      <td class="${cls}">${fmtPct(s.netMarginPct)}</td>
+      <td>${bep}</td>
+    </tr>`;
+  }).join('');
+
+  // ── SENSITIVITY TABLE (per-km; prestiż i wartość auta z aktualnych suwaków) ──
+  const kmVals = [200, 500, 1000, 2000, 3000, 5000, 7500, 10000];
+  const pf     = r.prestigeFactor;
+  document.getElementById('sensitivity-table').innerHTML = kmVals.map(km => {
+    const aboMonths = Math.max(p.months, 12);
+    const hw   = p.highwayShare;
+    const dRate = p.driverRate * (1 - hw) + p.driverRateHw * hw;
+    const aRate = p.advRate    * (1 - hw) + p.advRateHw    * hw;
+    const dp   = km * dRate * pf * p.wrapFactor;
+    const rev  = km * aRate * pf * (p.isAbo ? (1 + p.aboUplift) : 1);
+    const wA   = p.isAbo ? p.wrapCost   / aboMonths : 0;
+    const uwA  = p.isAbo ? p.unwrapCost / aboMonths : 0;
+    const gm   = rev - dp - wA - uwA;
+    const gmPct = rev > 0 ? gm / rev * 100 : 0;
+    const hi   = km === p.kmPerMonth ? 'class="scenario-highlight"' : '';
+    const cls  = gm >= 0 ? 'pos' : 'neg';
+    return `<tr ${hi}>
+      <td class="bold">${fmtN(km)} km</td>
+      <td class="neg">${fmt(dp)}</td>
+      <td>${fmt(rev)}</td>
+      <td class="${cls}">${fmt(gm)}</td>
+      <td class="${cls}">${fmtPct(gmPct)}</td>
+    </tr>`;
+  }).join('');
+}
+
+compute();
+</script>
+</body>
+</html>

@@ -1,7 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_ROUTES = ['/', '/login', '/register', '/auth/callback', '/kalkulator', '/api/stripe/webhook', '/api/leads']
+const PUBLIC_ROUTES = ['/', '/login', '/register', '/auth/callback', '/kalkulator', '/flota', '/forgot-password', '/update-password', '/api/stripe/webhook', '/api/leads', '/api/onboarding/driver', '/api/onboarding/advertiser']
+const PUBLIC_PREFIXES = ['/onboarding']
 const ADMIN_ROUTES = ['/admin']
 
 export async function middleware(request: NextRequest) {
@@ -32,15 +33,20 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
 
-  // Pozwól na publiczne trasy
-  if (PUBLIC_ROUTES.some(route => pathname === route || pathname.startsWith('/api/stripe'))) {
+  // Pozwól na publiczne trasy (dokładne dopasowanie) oraz webhook Stripe (weryfikuje podpis sam)
+  if (PUBLIC_ROUTES.includes(pathname) || pathname === '/api/stripe/webhook' || PUBLIC_PREFIXES.some(p => pathname.startsWith(p))) {
     return supabaseResponse
   }
 
+  // Origin za reverse proxy — nextUrl może mieć host localhost:3000
+  const forwardedHost = request.headers.get('x-forwarded-host')
+  const origin = forwardedHost
+    ? `${request.headers.get('x-forwarded-proto') ?? 'https'}://${forwardedHost}`
+    : request.nextUrl.origin
+
   // Brak sesji → redirect do logowania
   if (!user) {
-    const loginUrl = request.nextUrl.clone()
-    loginUrl.pathname = '/login'
+    const loginUrl = new URL('/login', origin)
     loginUrl.searchParams.set('redirectTo', pathname)
     return NextResponse.redirect(loginUrl)
   }
@@ -54,9 +60,7 @@ export async function middleware(request: NextRequest) {
       .single()
 
     if (!profile || profile.role !== 'admin') {
-      const dashboardUrl = request.nextUrl.clone()
-      dashboardUrl.pathname = '/dashboard'
-      return NextResponse.redirect(dashboardUrl)
+      return NextResponse.redirect(new URL('/dashboard', origin))
     }
   }
 

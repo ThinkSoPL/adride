@@ -1,0 +1,86 @@
+name: 📊 Weekly Monitoring Report
+
+on:
+  schedule:
+    # Every Monday at 8 AM UTC
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+
+jobs:
+  weekly-report:
+    runs-on: ubuntu-latest
+    name: Generate Weekly Report
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: ./notte-tests
+        run: npm install
+
+      - name: Get GitHub Actions logs (last 7 days)
+        uses: actions/github-script@v7
+        id: logs
+        with:
+          script: |
+            const runs = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'monitor.yml',
+              created: `>=${new Date(Date.now() - 7*24*60*60*1000).toISOString()}`,
+              per_page: 100
+            });
+
+            const successful = runs.data.workflow_runs.filter(r => r.conclusion === 'success').length;
+            const failed = runs.data.workflow_runs.filter(r => r.conclusion === 'failure').length;
+            const total = runs.data.workflow_runs.length;
+            const uptime = total > 0 ? ((successful / total) * 100).toFixed(1) : 'N/A';
+
+            console.log(`Weekly Report: ${successful}/${total} passed (${uptime}% uptime)`);
+            return { successful, failed, total, uptime };
+
+      - name: Send Slack Report
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: 'custom'
+          custom_payload: |
+            {
+              text: '📊 AdRide Weekly Monitoring Report',
+              blocks: [
+                {
+                  type: 'section',
+                  text: {
+                    type: 'mrkdwn',
+                    text: '*📊 AdRide Weekly Monitoring Report*\n\n' +
+                          '🟢 Status: Production Monitored\n' +
+                          '⏱️ Period: Last 7 days\n' +
+                          '📈 Uptime: ${{ steps.logs.outputs.uptime }}%\n' +
+                          '✅ Successful checks: ${{ steps.logs.outputs.successful }}\n' +
+                          '❌ Failed checks: ${{ steps.logs.outputs.failed }}\n\n' +
+                          '[View full run →](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})'
+                  }
+                }
+              ]
+            }
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+        # Uncomment when you add SLACK_WEBHOOK_URL secret
+
+      - name: Create summary
+        run: |
+          echo "## 📊 Weekly Monitoring Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Last 7 Days" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Uptime:** ${{ steps.logs.outputs.uptime }}%" >> $GITHUB_STEP_SUMMARY
+          echo "- **Successful checks:** ${{ steps.logs.outputs.successful }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Failed checks:** ${{ steps.logs.outputs.failed }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Total checks:** ${{ steps.logs.outputs.total }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "[View AdRide on GitHub →](https://github.com/${{ github.repository }})" >> $GITHUB_STEP_SUMMARY

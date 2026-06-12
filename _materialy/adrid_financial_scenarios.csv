@@ -1,0 +1,28 @@
+model,scenario,cars,revenue_per_car_month,driver_payout_per_car_month,wrap_cost_total_per_car,wrap_amortization_months,gross_contribution_per_car_month,gross_contribution_total_month,notes
+A_old_or_hybrid_without_wrap_amortization,low,10,2000,1500,,,500,5000,Przychod minus wyplata kierowcy; bez amortyzacji oklejenia i bez kosztow stalych
+A_old_or_hybrid_without_wrap_amortization,low,50,2000,1500,,,500,25000,Przychod minus wyplata kierowcy; bez amortyzacji oklejenia i bez kosztow stalych
+A_old_or_hybrid_without_wrap_amortization,low,100,2000,1500,,,500,50000,Przychod minus wyplata kierowcy; bez amortyzacji oklejenia i bez kosztow stalych
+B_old_model_with_wrap_amortization_paid_by_AdRide,low,10,2000,1500,8000,12,-166.67,-1666.7,Przychod minus wyplata kierowcy minus amortyzacja oklejenia; bez kosztow stalych
+B_old_model_with_wrap_amortization_paid_by_AdRide,low,50,2000,1500,8000,12,-166.67,-8333.5,Przychod minus wyplata kierowcy minus amortyzacja oklejenia; bez kosztow stalych
+B_old_model_with_wrap_amortization_paid_by_AdRide,low,100,2000,1500,8000,12,-166.67,-16667.0,Przychod minus wyplata kierowcy minus amortyzacja oklejenia; bez kosztow stalych
+B_old_model_with_wrap_amortization_paid_by_AdRide,low,10,2000,1500,15000,12,-750.0,-7500.0,Przychod minus wyplata kierowcy minus amortyzacja oklejenia; bez kosztow stalych
+B_old_model_with_wrap_amortization_paid_by_AdRide,low,50,2000,1500,15000,12,-750.0,-37500.0,Przychod minus wyplata kierowcy minus amortyzacja oklejenia; bez kosztow stalych
+B_old_model_with_wrap_amortization_paid_by_AdRide,low,100,2000,1500,15000,12,-750.0,-75000.0,Przychod minus wyplata kierowcy minus amortyzacja oklejenia; bez kosztow stalych
+A_old_or_hybrid_without_wrap_amortization,base,10,2500,1500,,,1000,10000,Przychod minus wyplata kierowcy; bez amortyzacji oklejenia i bez kosztow stalych
+A_old_or_hybrid_without_wrap_amortization,base,50,2500,1500,,,1000,50000,Przychod minus wyplata kierowcy; bez amortyzacji oklejenia i bez kosztow stalych
+A_old_or_hybrid_without_wrap_amortization,base,100,2500,1500,,,1000,100000,Przychod minus wyplata kierowcy; bez amortyzacji oklejenia i bez kosztow stalych
+B_old_model_with_wrap_amortization_paid_by_AdRide,base,10,2500,1500,8000,12,333.33,3333.3,Przychod minus wyplata kierowcy minus amortyzacja oklejenia; bez kosztow stalych
+B_old_model_with_wrap_amortization_paid_by_AdRide,base,50,2500,1500,8000,12,333.33,16666.5,Przychod minus wyplata kierowcy minus amortyzacja oklejenia; bez kosztow stalych
+B_old_model_with_wrap_amortization_paid_by_AdRide,base,100,2500,1500,8000,12,333.33,33333.0,Przychod minus wyplata kierowcy minus amortyzacja oklejenia; bez kosztow stalych
+B_old_model_with_wrap_amortization_paid_by_AdRide,base,10,2500,1500,15000,12,-250.0,-2500.0,Przychod minus wyplata kierowcy minus amortyzacja oklejenia; bez kosztow stalych
+B_old_model_with_wrap_amortization_paid_by_AdRide,base,50,2500,1500,15000,12,-250.0,-12500.0,Przychod minus wyplata kierowcy minus amortyzacja oklejenia; bez kosztow stalych
+B_old_model_with_wrap_amortization_paid_by_AdRide,base,100,2500,1500,15000,12,-250.0,-25000.0,Przychod minus wyplata kierowcy minus amortyzacja oklejenia; bez kosztow stalych
+A_old_or_hybrid_without_wrap_amortization,high,10,3000,1500,,,1500,15000,Przychod minus wyplata kierowcy; bez amortyzacji oklejenia i bez kosztow stalych
+A_old_or_hybrid_without_wrap_amortization,high,50,3000,1500,,,1500,75000,Przychod minus wyplata kierowcy; bez amortyzacji oklejenia i bez kosztow stalych
+A_old_or_hybrid_without_wrap_amortization,high,100,3000,1500,,,1500,150000,Przychod minus wyplata kierowcy; bez amortyzacji oklejenia i bez kosztow stalych
+B_old_model_with_wrap_amortization_paid_by_AdRide,high,10,3000,1500,8000,12,833.33,8333.3,Przychod minus wyplata kierowcy minus amortyzacja oklejenia; bez kosztow stalych
+B_old_model_with_wrap_amortization_paid_by_AdRide,high,50,3000,1500,8000,12,833.33,41666.5,Przychod minus wyplata kierowcy minus amortyzacja oklejenia; bez kosztow stalych
+B_old_model_with_wrap_amortization_paid_by_AdRide,high,100,3000,1500,8000,12,833.33,83333.0,Przychod minus wyplata kierowcy minus amortyzacja oklejenia; bez kosztow stalych
+B_old_model_with_wrap_amortization_paid_by_AdRide,high,10,3000,1500,15000,12,250.0,2500.0,Przychod minus wyplata kierowcy minus amortyzacja oklejenia; bez kosztow stalych
+B_old_model_with_wrap_amortization_paid_by_AdRide,high,50,3000,1500,15000,12,250.0,12500.0,Przychod minus wyplata kierowcy minus amortyzacja oklejenia; bez kosztow stalych
+B_old_model_with_wrap_amortization_paid_by_AdRide,high,100,3000,1500,15000,12,250.0,25000.0,Przychod minus wyplata kierowcy minus amortyzacja oklejenia; bez kosztow stalych

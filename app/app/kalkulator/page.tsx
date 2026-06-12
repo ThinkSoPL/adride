@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { SiteHeader } from '@/components/SiteHeader';
 import { ImpressionsForm } from '@/features/impressions-calculator/ImpressionsForm';
 
 export const metadata: Metadata = {
@@ -10,6 +11,8 @@ export const metadata: Metadata = {
 export default function KalkulatorPage() {
   return (
     <main className="min-h-screen bg-[#0A0D12] text-[#E6EDF3]">
+      <SiteHeader />
+
       <div className="max-w-5xl mx-auto px-4 py-12">
         <div className="mb-10">
           <div className="inline-flex items-center gap-2 bg-[#FF6B35]/10 border border-[#FF6B35]/20 rounded-full px-4 py-1.5 mb-5">
@@ -24,7 +27,7 @@ export default function KalkulatorPage() {
 
           <p className="text-[#718096] text-lg max-w-2xl leading-relaxed">
             Sprawdź, ile osób zobaczy Twoją reklamę na samochodach w Warszawie.
-            Ustaw dzielnicę, flotę i budżet — wynik pojawia się od razu.
+            Wybierz dzielnice, flotę i czas kampanii — wynik pojawia się od razu.
           </p>
         </div>
 

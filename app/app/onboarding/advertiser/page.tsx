@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { sendToWebhook } from '@/lib/tracking/webhook'
 
 const INDUSTRIES = [
   'Gastronomia', 'Zdrowie i uroda', 'Medycyna / klinika', 'Fitness / sport',
@@ -12,6 +13,18 @@ export default function AdvertiserOnboardingPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [loggingOut, setLoggingOut] = useState(false)
+  const formStartedAt = useRef<number | undefined>(undefined)
+
+  function markFormStart() {
+    if (!formStartedAt.current) formStartedAt.current = Date.now()
+  }
+
+  async function handleLogout() {
+    setLoggingOut(true)
+    await fetch('/auth/signout', { method: 'POST' })
+    router.push('/login')
+  }
 
   const [companyName, setCompanyName] = useState('')
   const [vatId, setVatId] = useState('')
@@ -25,34 +38,56 @@ export default function AdvertiserOnboardingPage() {
     setLoading(true)
     setError('')
 
-    const res = await fetch('/api/onboarding/advertiser', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        company_name: companyName,
-        vat_id: vatId,
-        industry,
-        billing_address: { street, postal_code: postalCode, city: billingCity, country: 'PL' },
-      }),
-    })
+    try {
+      const res = await fetch('/api/onboarding/advertiser', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          company_name: companyName,
+          vat_id: vatId,
+          industry,
+          billing_address: { street, postal_code: postalCode, city: billingCity, country: 'PL' },
+        }),
+      })
 
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}))
-      setError(data.error || 'Wystąpił błąd. Spróbuj ponownie.')
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error || 'Wystąpił błąd. Spróbuj ponownie.')
+        setLoading(false)
+        return
+      }
+
+      sendToWebhook(
+        'onboarding_advertiser',
+        { name: companyName, industry, nip: vatId, miasto: billingCity },
+        formStartedAt.current
+      )
+
+      router.push('/dashboard/advertiser')
+      router.refresh()
+    } catch {
+      setError('Błąd połączenia. Sprawdź internet i spróbuj ponownie.')
       setLoading(false)
-      return
     }
-
-    router.push('/dashboard/advertiser')
-    router.refresh()
   }
 
   return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-lg">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-white">Witaj! 📢</h1>
-          <p className="text-gray-400 mt-2">Uzupełnij dane firmy, aby uruchamiać kampanie</p>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex-1 text-center">
+            <h1 className="text-2xl font-bold text-white">Witaj! 📢</h1>
+            <p className="text-gray-400 mt-2">Uzupełnij dane firmy, aby uruchamiać kampanie</p>
+          </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="ml-4 px-3 py-2 text-sm text-gray-400 hover:text-white transition disabled:opacity-50"
+            title="Wyloguj się"
+          >
+            ↩ Wyjdź
+          </button>
         </div>
 
         <div className="bg-gray-900 rounded-2xl p-6 md:p-8 border border-gray-800">
@@ -62,7 +97,7 @@ export default function AdvertiserOnboardingPage() {
               <input
                 type="text"
                 value={companyName}
-                onChange={e => setCompanyName(e.target.value)}
+                onChange={e => { markFormStart(); setCompanyName(e.target.value) }}
                 required
                 className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500"
                 placeholder="Moja Firma Sp. z o.o."

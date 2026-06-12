@@ -1,16 +1,19 @@
-import { calculate } from '../calculator';
+import { calculate, type CalculatorInput } from '../calculator';
 
 describe('calculate', () => {
-  const baseInput = {
-    districtId: 'srodmiescie',
+  const baseInput: CalculatorInput = {
+    districtIds: ['srodmiescie'],
     numVehicles: 1,
     kmDailyPerVehicle: 100,
-    months: 1,
-    budgetMonthlyPLN: null,
+    months: 6,
   };
 
-  it('returns null for unknown district', () => {
-    expect(calculate({ ...baseInput, districtId: 'mars' })).toBeNull();
+  it('returns null for empty district selection', () => {
+    expect(calculate({ ...baseInput, districtIds: [] })).toBeNull();
+  });
+
+  it('returns null when no selected district is known', () => {
+    expect(calculate({ ...baseInput, districtIds: ['mars'] })).toBeNull();
   });
 
   it('calculates impressions per vehicle daily correctly', () => {
@@ -32,27 +35,37 @@ describe('calculate', () => {
   });
 
   it('scales total = monthly × months', () => {
-    const result = calculate({ ...baseInput, months: 6 });
-    expect(result?.impressionsTotal).toBe(6300 * 30 * 6);
+    const result = calculate({ ...baseInput, months: 12 });
+    expect(result?.impressionsTotal).toBe(6300 * 30 * 12);
   });
 
-  it('returns null CPM when budget is not provided', () => {
+  it('averages traffic density across multiple districts', () => {
+    // srodmiescie 420 + mokotow 310 = 730 / 2 = 365
+    // 1 vehicle × 100 km × 365 × 0.15 = 5475
+    const result = calculate({ ...baseInput, districtIds: ['srodmiescie', 'mokotow'] });
+    expect(result?.avgTrafficDensity).toBe(365);
+    expect(result?.impressionsPerVehicleDaily).toBe(5475);
+  });
+
+  it('derives CPM from our pricing (always positive, not from user budget)', () => {
+    // 1 vehicle → recommended START (2800 PLN). impressionsMonthly = 189000.
+    // cpm = (2800 / 189000) × 1000 = 14.81
     const result = calculate(baseInput);
-    expect(result?.cpmPLN).toBeNull();
+    expect(result?.recommendedPackage.id).toBe('START');
+    expect(result?.cpmPLN).toBeCloseTo(14.81, 1);
   });
 
-  it('returns null CPM when budget is zero', () => {
-    const result = calculate({ ...baseInput, budgetMonthlyPLN: 0 });
-    expect(result?.cpmPLN).toBeNull();
+  it('recommends bigger package as fleet grows', () => {
+    expect(calculate({ ...baseInput, numVehicles: 3 })?.recommendedPackage.id).toBe('START');
+    expect(calculate({ ...baseInput, numVehicles: 7 })?.recommendedPackage.id).toBe('SCALE');
+    expect(calculate({ ...baseInput, numVehicles: 15 })?.recommendedPackage.id).toBe('PREMIUM');
   });
 
-  it('calculates CPM correctly when budget is provided', () => {
-    // 1 vehicle, 100 km, srodmiescie (420 density), 1 month, 5000 PLN budget
-    // impressions_total = 6300 × 30 × 1 = 189000
-    // total_budget = 5000 × 1 = 5000
-    // cpm = (5000 / 189000) × 1000 = 26.46
-    const result = calculate({ ...baseInput, budgetMonthlyPLN: 5000 });
-    expect(result?.cpmPLN).toBeCloseTo(26.46, 1);
+  it('returns brand-recall lift and estimated clients within sane bounds', () => {
+    const result = calculate({ ...baseInput, numVehicles: 10, months: 12 });
+    expect(result?.brandRecallLiftPct).toBeGreaterThan(0);
+    expect(result?.brandRecallLiftPct).toBeLessThanOrEqual(14);
+    expect(result?.estimatedNewClients).toBeGreaterThanOrEqual(0);
   });
 
   it('handles edge case: zero kilometers', () => {
@@ -62,14 +75,13 @@ describe('calculate', () => {
   });
 
   it('rounds impressions to nearest integer (no fractional impressions)', () => {
-    // 1 vehicle × 33 km × 420 density × 0.15 = 2079.0 (no fraction)
     const result = calculate({ ...baseInput, kmDailyPerVehicle: 33 });
     expect(Number.isInteger(result?.impressionsPerVehicleDaily)).toBe(true);
   });
 
   it('district affects density: bigger district → bigger impressions', () => {
-    const srodmiescie = calculate({ ...baseInput, districtId: 'srodmiescie' });
-    const wesola = calculate({ ...baseInput, districtId: 'wesola' });
+    const srodmiescie = calculate({ ...baseInput, districtIds: ['srodmiescie'] });
+    const wesola = calculate({ ...baseInput, districtIds: ['wesola'] });
     expect(srodmiescie!.impressionsDaily).toBeGreaterThan(wesola!.impressionsDaily);
   });
 });

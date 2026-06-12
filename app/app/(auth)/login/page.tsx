@@ -18,16 +18,27 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
 
-    if (error) {
-      setError('Nieprawidłowy email lub hasło')
+      if (error) {
+        setError('Nieprawidłowy email lub hasło')
+        setLoading(false)
+        return
+      }
+
+      const params = new URLSearchParams(window.location.search)
+      const redirectTo = params.get('redirectTo')
+      const safeRedirect =
+        redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//')
+          ? redirectTo
+          : '/dashboard'
+      router.push(safeRedirect)
+      router.refresh()
+    } catch {
+      setError('Błąd połączenia. Sprawdź internet i spróbuj ponownie.')
       setLoading(false)
-      return
     }
-
-    router.push('/dashboard')
-    router.refresh()
   }
 
   return (
@@ -59,14 +70,18 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Hasło
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium text-gray-300">Hasło</label>
+                <Link href="/forgot-password" className="text-xs text-orange-500 hover:text-orange-400">
+                  Zapomniałem hasła
+                </Link>
+              </div>
               <input
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
+                autoComplete="current-password"
                 className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition"
                 placeholder="••••••••"
               />

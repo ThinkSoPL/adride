@@ -4,7 +4,14 @@ import type {
   DateRange,
   SessionRoute,
 } from '../types';
+import { createServiceClient } from '@/lib/supabase/service';
 
+// UWAGA: nie pobieramy już `registration_plate_masked` przez zagnieżdżony JOIN.
+// Po naprawie rekursji RLS reklamodawca nie ma SELECT na `vehicles`, więc join
+// zwracałby null. Zamiast tego dociągamy zamaskowane tablice osobno przez
+// service_role — ALE wyłącznie dla vehicle_id, które RLS-client już zwrócił
+// (czyli do których użytkownik ma dostęp w ramach kampanii). Autoryzacja
+// pozostaje po stronie RLS; service_role służy tylko do wzbogacenia wyświetlania.
 const SESSION_SELECT = `
   id,
   vehicle_id,
@@ -14,9 +21,20 @@ const SESSION_SELECT = `
   total_distance_m,
   total_points,
   avg_speed_kmh,
-  route_geom,
-  vehicles:vehicle_id ( registration_plate_masked )
+  route_geom
 `;
+
+/** Mapa vehicle_id → zamaskowana tablica (przez service_role). */
+async function fetchMaskedPlates(vehicleIds: string[]): Promise<Map<string, string>> {
+  const ids = [...new Set(vehicleIds)].filter(Boolean);
+  if (ids.length === 0) return new Map();
+  const service = createServiceClient();
+  const { data } = await service
+    .from('vehicles')
+    .select('id, registration_plate_masked')
+    .in('id', ids);
+  return new Map((data ?? []).map((v) => [v.id as string, (v.registration_plate_masked as string) ?? '—']));
+}
 
 export async function fetchCampaignSessions(
   supabase: SupabaseClient,
@@ -34,7 +52,10 @@ export async function fetchCampaignSessions(
 
   if (error) throw new Error(`fetchCampaignSessions: ${error.message}`);
 
-  return (data ?? []).map((row: Record<string, unknown>) => ({
+  const rows = data ?? [];
+  const plates = await fetchMaskedPlates(rows.map((r: Record<string, unknown>) => r.vehicle_id as string));
+
+  return rows.map((row: Record<string, unknown>) => ({
     id: row.id as string,
     vehicle_id: row.vehicle_id as string,
     campaign_id: row.campaign_id as string,
@@ -44,7 +65,7 @@ export async function fetchCampaignSessions(
     total_points: (row.total_points as number) ?? 0,
     avg_speed_kmh: row.avg_speed_kmh as number | null,
     route_geom: row.route_geom as SessionRoute['route_geom'],
-    vehicles: row.vehicles as SessionRoute['vehicles'],
+    vehicles: { registration_plate_masked: plates.get(row.vehicle_id as string) ?? '—' },
   }));
 }
 
@@ -52,31 +73,22 @@ export async function fetchCampaignVehicles(
   supabase: SupabaseClient,
   campaignId: string,
 ): Promise<CampaignVehicle[]> {
+  // campaign_vehicles ma zdenormalizowany driver_id (migracja 23) — nie trzeba
+  // już joinować vehicles (do którego advertiser nie ma RLS).
   const { data, error } = await supabase
     .from('campaign_vehicles')
-    .select(`
-      vehicle_id,
-      vehicles:vehicle_id ( id, driver_id, registration_plate_masked )
-    `)
+    .select('vehicle_id, driver_id')
     .eq('campaign_id', campaignId)
     .is('removed_at', null);
 
   if (error) throw new Error(`fetchCampaignVehicles: ${error.message}`);
 
-  const rows = (data ?? []) as unknown as Array<{
-    vehicles: {
-      id: string;
-      driver_id: string;
-      registration_plate_masked: string;
-    } | null;
-  }>;
+  const rows = (data ?? []) as Array<{ vehicle_id: string; driver_id: string | null }>;
+  const plates = await fetchMaskedPlates(rows.map((r) => r.vehicle_id));
 
-  return rows
-    .map((row) => row.vehicles)
-    .filter((v): v is NonNullable<typeof v> => v !== null)
-    .map((v) => ({
-      id: v.id,
-      driver_id: v.driver_id,
-      registration_plate_masked: v.registration_plate_masked,
-    }));
+  return rows.map((r) => ({
+    id: r.vehicle_id,
+    driver_id: r.driver_id ?? '',
+    registration_plate_masked: plates.get(r.vehicle_id) ?? '—',
+  }));
 }

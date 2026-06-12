@@ -8,7 +8,7 @@ interface VehiclePayload {
   make?: string | null
   model?: string | null
   year?: number | null
-  color?: string | null
+  engine_type?: string | null
   mileage_monthly_estimate?: number | null
 }
 
@@ -66,7 +66,8 @@ export async function POST(req: NextRequest) {
   }
 
   // 2. Utwórz pojazd
-  const year = typeof body.vehicle?.year === 'number' && body.vehicle.year >= 1990 && body.vehicle.year <= 2030
+  const maxYear = new Date().getFullYear() + 1
+  const year = typeof body.vehicle?.year === 'number' && body.vehicle.year >= 1990 && body.vehicle.year <= maxYear
     ? body.vehicle.year
     : null
   const mileage = typeof body.vehicle?.mileage_monthly_estimate === 'number' && body.vehicle.mileage_monthly_estimate > 0
@@ -79,7 +80,7 @@ export async function POST(req: NextRequest) {
     make: str(body.vehicle?.make),
     model: str(body.vehicle?.model),
     year,
-    color: str(body.vehicle?.color),
+    engine_type: str(body.vehicle?.engine_type),
     mileage_monthly_estimate: mileage,
     status: 'available',
   }).select('id').maybeSingle()

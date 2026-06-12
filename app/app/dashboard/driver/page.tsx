@@ -3,8 +3,18 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { requireRole } from '@/lib/auth/session'
 import { DashboardShell } from '@/modules/dashboard/DashboardShell'
+import { getDriverCampaigns } from '@/features/driver-campaigns/queries'
 
 export const dynamic = 'force-dynamic'
+
+const CAMPAIGN_STATUS_LABEL: Record<string, { label: string; color: string }> = {
+  draft: { label: 'Szkic', color: 'bg-gray-500/20 text-gray-400' },
+  pending_payment: { label: 'Oczekuje na płatność', color: 'bg-yellow-500/20 text-yellow-400' },
+  active: { label: 'W trakcie', color: 'bg-green-500/20 text-green-400' },
+  paused: { label: 'Wstrzymana', color: 'bg-orange-500/20 text-orange-400' },
+  completed: { label: 'Zakończona', color: 'bg-blue-500/20 text-blue-400' },
+  cancelled: { label: 'Anulowana', color: 'bg-red-500/20 text-red-400' },
+}
 
 const STATUS_INFO: Record<string, { label: string; color: string; desc: string }> = {
   pending: { label: 'Oczekuje na weryfikację', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40', desc: 'Twoje konto jest sprawdzane. Damy znać, gdy zostanie zatwierdzone.' },
@@ -44,6 +54,9 @@ export default async function DriverDashboard() {
   const totalPaid = (payouts ?? [])
     .filter(p => p.status === 'paid')
     .reduce((sum, p) => sum + (p.amount_grosze ?? 0), 0)
+
+  // Kampanie, w których jeździ kierowca (nazwa firmy przez service_role — brak RLS na advertisers)
+  const driverCampaigns = await getDriverCampaigns(profile.id)
 
   const status = driver.status as string
   const info = STATUS_INFO[status] ?? { label: status, color: 'bg-gray-500/20 text-gray-400 border-gray-500/40', desc: '' }
@@ -90,6 +103,43 @@ export default async function DriverDashboard() {
           </Link>
         </div>
       )}
+
+      {/* Moje kampanie */}
+      <section id="campaigns" className="mb-8">
+        <h2 className="text-lg font-semibold mb-3">Moje kampanie</h2>
+        {driverCampaigns.length > 0 ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {driverCampaigns.map(c => {
+              const st = CAMPAIGN_STATUS_LABEL[c.campaignStatus] ?? { label: c.campaignStatus, color: 'bg-gray-500/20 text-gray-400' }
+              return (
+                <div key={`${c.campaignId}-${c.vehiclePlateMasked}`} className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="font-semibold text-white truncate">{c.campaignName}</div>
+                    <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${st.color}`}>{st.label}</span>
+                  </div>
+                  <div className="text-sm text-gray-400 mt-1">
+                    Jeździsz dla: <span className="text-gray-200">{c.firmName}</span>
+                  </div>
+                  <div className="text-xs text-gray-500 mt-2 flex items-center justify-between gap-2">
+                    <span className="font-mono">{c.vehiclePlateMasked} · {c.vehicleMakeModel}</span>
+                    <span className="text-orange-400 font-medium">{c.kmThisMonth.toLocaleString('pl-PL')} km / mc</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 text-center">
+            <div className="text-3xl mb-2">🚗</div>
+            <div className="text-white font-medium mb-1">Nie jeździsz jeszcze w żadnej kampanii</div>
+            <div className="text-gray-400 text-sm">
+              {status === 'pending'
+                ? 'Najpierw zatwierdzimy Twoje konto. Potem dopasujemy Cię do kampanii reklamodawcy.'
+                : 'Gdy dopasujemy Cię do kampanii reklamodawcy, pojawi się tutaj wraz z nazwą firmy i przejechanymi kilometrami.'}
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* Vehicles */}
       <section id="vehicles" className="mb-8">

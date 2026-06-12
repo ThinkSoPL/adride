@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Map, { type MapRef } from 'react-map-gl';
 import { sessionsToFeatureCollection } from './utils/geojson';
@@ -80,6 +81,14 @@ export function CampaignMapClient({
 
   return (
     <div className="relative h-full w-full">
+      {/* Przycisk powrotu */}
+      <Link
+        href="/dashboard/advertiser"
+        className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-gray-900 border border-gray-800 hover:border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-300 hover:text-white transition"
+      >
+        ← Powrót
+      </Link>
+
       <Map
         ref={(instance) => {
           mapRef.current = instance;

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import type { UserRole } from '@/lib/auth/session'
+import { MobileNav } from './MobileNav'
 
 interface NavItem {
   href: string
@@ -13,16 +14,21 @@ const NAV: Record<UserRole, NavItem[]> = {
     { href: '/dashboard/driver', label: 'Pulpit', icon: '📊' },
     { href: '/dashboard/driver#vehicles', label: 'Moje pojazdy', icon: '🚗' },
     { href: '/dashboard/driver#earnings', label: 'Zarobki', icon: '💰' },
+    { href: '/dashboard/account', label: 'Konto', icon: '⚙️' },
   ],
   advertiser: [
     { href: '/dashboard/advertiser', label: 'Pulpit', icon: '📊' },
     { href: '/dashboard/advertiser#campaigns', label: 'Kampanie', icon: '📢' },
+    { href: '/dashboard/advertiser/drivers', label: 'Kierowcy', icon: '🚗' },
     { href: '/kalkulator', label: 'Kalkulator', icon: '🧮' },
+    { href: '/dashboard/account', label: 'Konto', icon: '⚙️' },
   ],
   admin: [
     { href: '/admin', label: 'Pulpit', icon: '📊' },
-    { href: '/admin#drivers', label: 'Kierowcy', icon: '🚗' },
+    { href: '/admin#all-drivers', label: 'Kierowcy', icon: '🚗' },
     { href: '/admin#campaigns', label: 'Kampanie', icon: '📢' },
+    { href: '/admin#firms', label: 'Firmy', icon: '🏢' },
+    { href: '/dashboard/account', label: 'Konto', icon: '⚙️' },
   ],
 }
 
@@ -83,13 +89,11 @@ export function DashboardShell({
       {/* Main */}
       <div className="flex-1 flex flex-col">
         {/* Topbar (mobile) */}
-        <header className="md:hidden flex items-center justify-between bg-gray-900 border-b border-gray-800 px-4 py-3">
+        <header className="md:hidden flex items-center gap-3 bg-gray-900 border-b border-gray-800 px-4 py-3">
+          <MobileNav nav={nav} fullName={fullName} email={email} roleLabel={ROLE_LABEL[role]} />
           <Link href="/dashboard" className="text-xl font-bold">
             Ad<span className="text-orange-500">Ride</span>
           </Link>
-          <form action="/auth/signout" method="post">
-            <button type="submit" className="text-sm text-gray-400">Wyloguj</button>
-          </form>
         </header>
 
         <main className="flex-1 p-5 md:p-8 max-w-6xl w-full mx-auto">{children}</main>

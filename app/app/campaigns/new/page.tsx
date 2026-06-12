@@ -3,16 +3,19 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { PACKAGE_LIST, formatPLN } from '@/lib/pricing'
 
 const DISTRICTS = [
   'Śródmieście', 'Mokotów', 'Wola', 'Ursynów', 'Praga-Południe', 'Praga-Północ',
   'Ochota', 'Żoliborz', 'Bielany', 'Bemowo', 'Targówek', 'Wilanów',
 ]
 
-const PACKAGES = [
-  { id: 'START', name: 'START', desc: 'Pakiet startowy — 3 pojazdy, jedna dzielnica', price: '2 800 zł / mc' },
-  { id: 'SCALE', name: 'SCALE', desc: 'Pakiet skalowania — 7+ pojazdów, premium targetowanie', price: 'od 17 500 zł / mc' },
-]
+const PACKAGES = PACKAGE_LIST.map(p => ({
+  id: p.id,
+  name: p.name,
+  desc: p.desc,
+  price: `${formatPLN(p.monthlyPLN)} / mc`,
+}))
 
 export default function NewCampaignPage() {
   const router = useRouter()
@@ -34,27 +37,32 @@ export default function NewCampaignPage() {
     setLoading(true)
     setError('')
 
-    const res = await fetch('/api/campaigns', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name,
-        package: pkg,
-        start_date: startDate || null,
-        min_km_per_vehicle_monthly: parseInt(minKm, 10) || 1500,
-        target_districts: districts,
-      }),
-    })
+    try {
+      const res = await fetch('/api/campaigns', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          package: pkg,
+          start_date: startDate || null,
+          min_km_per_vehicle_monthly: parseInt(minKm, 10) || 1500,
+          target_districts: districts,
+        }),
+      })
 
-    const data = await res.json().catch(() => ({}))
-    if (!res.ok) {
-      setError(data.error || 'Wystąpił błąd.')
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setError(data.error || 'Wystąpił błąd.')
+        setLoading(false)
+        return
+      }
+
+      router.push(`/campaign/${data.id}`)
+      router.refresh()
+    } catch {
+      setError('Błąd połączenia. Sprawdź internet i spróbuj ponownie.')
       setLoading(false)
-      return
     }
-
-    router.push(`/campaign/${data.id}`)
-    router.refresh()
   }
 
   return (

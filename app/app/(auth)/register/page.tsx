@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/browser'
+import { sendToWebhook } from '@/lib/tracking/webhook'
 
 type Role = 'driver' | 'advertiser'
 
@@ -11,6 +12,12 @@ export default function RegisterPage() {
   const router = useRouter()
   const supabase = createClient()
   const [role, setRole] = useState<Role>('driver')
+
+  // Wstępny wybór roli z linku, np. /register?role=advertiser
+  useEffect(() => {
+    const param = new URLSearchParams(window.location.search).get('role')
+    if (param === 'driver' || param === 'advertiser') setRole(param)
+  }, [])
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
@@ -18,41 +25,56 @@ export default function RegisterPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [confirmEmail, setConfirmEmail] = useState(false)
+  const formStartedAt = useRef<number | undefined>(undefined)
+
+  function markFormStart() {
+    if (!formStartedAt.current) formStartedAt.current = Date.now()
+  }
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-          phone,
-          role,
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            phone,
+            role,
+          },
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
         },
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
-      },
-    })
+      })
 
-    if (error) {
-      setError(error.message)
+      if (error) {
+        const SUPABASE_ERRORS: Record<string, string> = {
+          'User already registered': 'Konto z tym emailem już istnieje.',
+          'Password should be at least 6 characters': 'Hasło musi mieć co najmniej 8 znaków.',
+          'Unable to validate email address: invalid format': 'Podaj poprawny adres email.',
+        }
+        setError(SUPABASE_ERRORS[error.message] ?? 'Wystąpił błąd rejestracji. Spróbuj ponownie.')
+        setLoading(false)
+        return
+      }
+
+      sendToWebhook('register', { name: fullName, email, phone, rola: role }, formStartedAt.current)
+
+      if (!data.session) {
+        setConfirmEmail(true)
+        setLoading(false)
+        return
+      }
+
+      router.push('/dashboard')
+      router.refresh()
+    } catch {
+      setError('Błąd połączenia. Sprawdź internet i spróbuj ponownie.')
       setLoading(false)
-      return
     }
-
-    // Jeśli email confirmation jest włączone, brak aktywnej sesji.
-    if (!data.session) {
-      setConfirmEmail(true)
-      setLoading(false)
-      return
-    }
-
-    // Sesja aktywna → przejdź do onboardingu (dashboard wykryje brak danych roli)
-    router.push('/dashboard')
-    router.refresh()
   }
 
   if (confirmEmail) {
@@ -131,7 +153,7 @@ export default function RegisterPage() {
               <input
                 type="text"
                 value={fullName}
-                onChange={e => setFullName(e.target.value)}
+                onChange={e => { markFormStart(); setFullName(e.target.value) }}
                 required
                 className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition"
                 placeholder="Jan Kowalski"
