@@ -1,8 +1,11 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { requireUser } from '@/lib/auth/session'
 import { DashboardShell } from '@/modules/dashboard/DashboardShell'
 import { DriverActions } from '@/modules/admin/DriverActions'
+import { AdminCampaignsTable } from '@/modules/admin/AdminCampaignsTable'
+import { AdminFirmsAccordion } from '@/modules/admin/AdminFirmsAccordion'
 
 export const dynamic = 'force-dynamic'
 
@@ -113,15 +116,6 @@ export default async function AdminDashboard() {
     campaignsByFirm.set(c.advertiser_id, list)
   }
 
-  const CAMPAIGN_STATUS: Record<string, string> = {
-    draft: 'bg-gray-500/20 text-gray-400',
-    pending_payment: 'bg-yellow-500/20 text-yellow-400',
-    active: 'bg-green-500/20 text-green-400',
-    paused: 'bg-orange-500/20 text-orange-400',
-    completed: 'bg-blue-500/20 text-blue-400',
-    cancelled: 'bg-red-500/20 text-red-400',
-  }
-
   const DRIVER_STATUS: Record<string, { label: string; color: string }> = {
     pending: { label: 'Oczekuje KYC', color: 'bg-yellow-500/20 text-yellow-400' },
     approved: { label: 'Zatwierdzony', color: 'bg-blue-500/20 text-blue-400' },
@@ -174,7 +168,11 @@ export default async function AdminDashboard() {
               <tbody>
                 {pendingRows.map(d => (
                   <tr key={d.id} className="border-t border-gray-800">
-                    <td className="px-4 py-3 text-white">{d.profiles?.full_name || '—'}</td>
+                    <td className="px-4 py-3">
+                      <Link href={`/admin/drivers/${d.id}`} className="text-white hover:text-orange-400 font-medium transition">
+                        {d.profiles?.full_name || '—'}
+                      </Link>
+                    </td>
                     <td className="px-4 py-3 text-gray-400">{d.profiles?.phone || '—'}</td>
                     <td className="px-4 py-3 text-gray-400">{d.city}</td>
                     <td className="px-4 py-3 text-gray-400">{new Date(d.created_at).toLocaleDateString('pl-PL')}</td>
@@ -203,18 +201,28 @@ export default async function AdminDashboard() {
                   <th className="text-left px-4 py-3 font-medium">Telefon</th>
                   <th className="text-left px-4 py-3 font-medium">Miasto</th>
                   <th className="text-left px-4 py-3 font-medium">Status</th>
+                  <th className="text-right px-4 py-3 font-medium">Szczegóły</th>
                 </tr>
               </thead>
               <tbody>
                 {driverRows.map(d => {
                   const st = DRIVER_STATUS[d.status] ?? { label: d.status, color: 'bg-gray-500/20 text-gray-400' }
                   return (
-                    <tr key={d.id} className="border-t border-gray-800">
-                      <td className="px-4 py-3 text-white">{d.profiles?.full_name || '—'}</td>
+                    <tr key={d.id} className="border-t border-gray-800 hover:bg-gray-800/40 transition">
+                      <td className="px-4 py-3">
+                        <Link href={`/admin/drivers/${d.id}`} className="text-white hover:text-orange-400 font-medium transition">
+                          {d.profiles?.full_name || '—'}
+                        </Link>
+                      </td>
                       <td className="px-4 py-3 text-gray-400">{d.profiles?.phone || '—'}</td>
                       <td className="px-4 py-3 text-gray-400">{d.city}</td>
                       <td className="px-4 py-3">
                         <span className={`text-xs px-2.5 py-1 rounded-full ${st.color}`}>{st.label}</span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <Link href={`/admin/drivers/${d.id}`} className="text-orange-400 hover:text-orange-300 text-sm whitespace-nowrap">
+                          Otwórz →
+                        </Link>
                       </td>
                     </tr>
                   )
@@ -229,104 +237,43 @@ export default async function AdminDashboard() {
         )}
       </section>
 
-      {/* Kampanie */}
+      {/* Kampanie — z filtrem statusu */}
       <section id="campaigns" className="mt-10">
         <h2 className="text-lg font-semibold mb-3">Kampanie ({campaignRows.length})</h2>
-        {campaignRows.length > 0 ? (
-          <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-x-auto">
-            <table className="w-full text-sm min-w-[640px]">
-              <thead className="bg-gray-800/50 text-gray-400">
-                <tr>
-                  <th className="text-left px-4 py-3 font-medium">Nazwa</th>
-                  <th className="text-left px-4 py-3 font-medium">Firma</th>
-                  <th className="text-left px-4 py-3 font-medium">Pakiet</th>
-                  <th className="text-left px-4 py-3 font-medium">Okres</th>
-                  <th className="text-right px-4 py-3 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {campaignRows.map(c => (
-                  <tr key={c.id} className="border-t border-gray-800">
-                    <td className="px-4 py-3 text-white">{c.name}</td>
-                    <td className="px-4 py-3 text-gray-400">{c.advertisers?.company_name || '—'}</td>
-                    <td className="px-4 py-3 text-gray-400">{c.package}</td>
-                    <td className="px-4 py-3 text-gray-400">
-                      {c.start_date ? new Date(c.start_date).toLocaleDateString('pl-PL') : '—'}
-                      {' – '}
-                      {c.end_date ? new Date(c.end_date).toLocaleDateString('pl-PL') : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <span className={`text-xs px-2.5 py-1 rounded-full ${CAMPAIGN_STATUS[c.status] ?? 'bg-gray-500/20 text-gray-400'}`}>
-                        {c.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 text-gray-400 text-sm">
-            Brak kampanii w systemie.
-          </div>
-        )}
+        <AdminCampaignsTable
+          rows={campaignRows.map(c => ({
+            id: c.id,
+            name: c.name,
+            firmName: c.advertisers?.company_name || '—',
+            package: c.package,
+            status: c.status,
+            startDate: c.start_date,
+            endDate: c.end_date,
+          }))}
+        />
       </section>
 
-      {/* Firmy */}
+      {/* Firmy — akordeon single-open */}
       <section id="firms" className="mt-10">
         <h2 className="text-lg font-semibold mb-3">Firmy reklamodawcy ({firmRows.length})</h2>
-        {firmRows.length > 0 ? (
-          <div className="grid gap-3 sm:grid-cols-2">
-            {firmRows.map(f => {
-              const firmCampaigns = campaignsByFirm.get(f.id) ?? []
-              return (
-                <details key={f.id} className="bg-gray-900 border border-gray-800 rounded-xl group">
-                  <summary className="p-4 cursor-pointer list-none select-none hover:bg-gray-800/40 rounded-xl transition">
-                    <div className="flex items-center justify-between">
-                      <div className="font-semibold text-white">{f.company_name}</div>
-                      <span className="text-gray-500 text-xs group-open:rotate-180 transition-transform">▼</span>
-                    </div>
-                    <div className="text-sm text-gray-400 mt-1">
-                      {f.industry || 'Branża nieokreślona'}
-                      {f.district_focus?.length ? ` · ${f.district_focus.join(', ')}` : ''}
-                      {` · ${firmCampaigns.length} kampanii`}
-                    </div>
-                  </summary>
-                  <div className="px-4 pb-4 border-t border-gray-800 pt-3 text-sm space-y-2">
-                    <div className="text-gray-400">
-                      <span className="text-gray-500">Kontakt:</span>{' '}
-                      {f.profiles?.full_name || '—'}{f.profiles?.phone ? ` · ${f.profiles.phone}` : ''}
-                    </div>
-                    <div className="text-gray-400">
-                      <span className="text-gray-500">NIP:</span> {f.vat_id || '—'}
-                      {' · '}
-                      <span className="text-gray-500">W systemie od:</span>{' '}
-                      {new Date(f.created_at).toLocaleDateString('pl-PL')}
-                    </div>
-                    {firmCampaigns.length > 0 ? (
-                      <ul className="space-y-1.5 pt-1">
-                        {firmCampaigns.map(c => (
-                          <li key={c.id} className="flex items-center justify-between gap-2">
-                            <span className="text-gray-300 truncate">{c.name} <span className="text-gray-500">({c.package})</span></span>
-                            <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${CAMPAIGN_STATUS[c.status] ?? 'bg-gray-500/20 text-gray-400'}`}>
-                              {c.status}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <div className="text-gray-500 pt-1">Brak kampanii.</div>
-                    )}
-                  </div>
-                </details>
-              )
-            })}
-          </div>
-        ) : (
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 text-gray-400 text-sm">
-            Brak firm w systemie.
-          </div>
-        )}
+        <AdminFirmsAccordion
+          firms={firmRows.map(f => ({
+            id: f.id,
+            companyName: f.company_name,
+            industry: f.industry,
+            districtFocus: f.district_focus,
+            vatId: f.vat_id,
+            createdAt: f.created_at,
+            contactName: f.profiles?.full_name ?? null,
+            contactPhone: f.profiles?.phone ?? null,
+            campaigns: (campaignsByFirm.get(f.id) ?? []).map(c => ({
+              id: c.id,
+              name: c.name,
+              package: c.package,
+              status: c.status,
+            })),
+          }))}
+        />
       </section>
     </DashboardShell>
   )

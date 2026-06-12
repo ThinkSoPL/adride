@@ -63,7 +63,7 @@ export function MobileNav({
             className="absolute inset-0 bg-black/60"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute top-0 left-0 bottom-0 w-72 max-w-[80vw] bg-gray-900 border-r border-gray-800 p-5 flex flex-col">
+          <div className="absolute top-0 left-0 bottom-0 w-72 max-w-[80vw] bg-gray-900 border-r border-gray-700 shadow-2xl shadow-black/70 p-5 flex flex-col">
             <div className="flex items-center justify-between mb-8">
               <Link href="/dashboard" className="text-2xl font-bold" onClick={() => setOpen(false)}>
                 Ad<span className="text-orange-500">Ride</span>
