@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Adride — Twoja reklama jedzie tam gdzie są Twoi klienci</title>
   <meta name="description" content="Adride łączy reklamodawców z kierowcami prywatnymi. Płacisz za realne kilometry ekspozycji GPS — nie za szacunkowy zasięg. Warszawa.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2314181F'/%3E%3Ccircle cx='16' cy='16' r='6.5' fill='%23F4A93C'/%3E%3C/svg%3E">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2314181F'/%3E%3Ccircle cx='16' cy='16' r='6.5' fill='%23F4A93C'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -63,12 +65,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <a href="https://app.adride.pl/kalkulator">Kalkulator</a>
     </div>
     <div class="nav-cta">
-      <div class="lang-toggle">
-        <button class="active" data-lang="pl">PL</button>
-        <button data-lang="en">EN</button>
-      </div>
       <a href="https://app.adride.pl/login" class="nav-login" style="font-size:14px;color:var(--ink-2);text-decoration:none;padding:8px 6px">Zaloguj</a>
-      <a href="kierowca.html" class="btn btn-ghost" style="font-size:14px;padding:8px 14px">Zostań kierowcą</a>
+      <a href="kierowca.html" class="btn btn-ghost nav-cta-secondary" style="font-size:14px;padding:8px 14px">Zostań kierowcą</a>
       <a href="reklamodawca.html" class="btn btn-amber" style="font-size:14px;padding:8px 14px">Zacznij kampanię</a>
     </div>
   </div>
@@ -89,17 +87,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <a href="kierowca.html" class="btn btn-ghost btn-lg">Zostań kierowcą Adride</a>
     </div>
     <div class="hero-meta">
-      <div>
+      <div class="hero-stat" title="Gwarantowane minimum kilometrów ekspozycji miesięcznie na każdy pojazd — jeśli auto nie dojedzie 1500 km, przedłużamy kampanię bezpłatnie.">
         <div class="stat-num">1500 <span style="font-size:18px;color:var(--ink-3)">km</span></div>
-        <div class="stat-label">Gwarancja / mies.</div>
+        <div class="stat-label">Gwarancja / mies. <span class="stat-hint">ⓘ</span></div>
       </div>
-      <div>
+      <div class="hero-stat" title="Panel z mapą tras i danymi GPS dostępny całą dobę — widzisz każdy przejechany kilometr swojej kampanii na żywo.">
         <div class="stat-num">24/7</div>
-        <div class="stat-label">Panel LIVE</div>
+        <div class="stat-label">Panel LIVE <span class="stat-hint">ⓘ</span></div>
       </div>
-      <div>
+      <div class="hero-stat" title="CPM = koszt dotarcia do 1000 odbiorców. Od 0,12 zł — wielokrotnie taniej niż billboard czy reklama w radiu.">
         <div class="stat-num">0,12 zł</div>
-        <div class="stat-label">CPM od</div>
+        <div class="stat-label">CPM od <span class="stat-hint">ⓘ</span></div>
       </div>
     </div>
   </div>
@@ -204,8 +202,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
     </div>
     <div class="how-step">
-      <h3>Wypłata co miesiąc</h3>
-      <p>Stripe Connect wypłaca prosto na konto. Faktura VAT generowana automatycznie. Bez papierologii.</p>
+      <h3>Wypłata po cyklu rozliczeniowym</h3>
+      <p>Po zamknięciu miesięcznego cyklu Stripe Connect przelewa środki na Twoje konto (zwykle kilka dni roboczych, zgodnie z zasadami Stripe). Faktura VAT generowana automatycznie.</p>
       <div class="icon-area">
         <div style="display:flex;gap:8px;align-items:center;width:100%">
           <div style="flex:1;height:32px;background:var(--ink);border-radius:6px;display:flex;align-items:center;padding:0 10px;color:var(--paper);font-family:var(--font-mono);font-size:12px;font-weight:600">+1 240 zł</div>
@@ -227,7 +225,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <li><span class="check">✓</span><span>Folia montowana w punkcie partnerskim — gratis, zdejmowalna</span></li>
         <li><span class="check">✓</span><span>Gwarancja minimum 400 zł / mies. (przy 1500 km)</span></li>
         <li><span class="check">✓</span><span>Aplikacja działa w tle — zero wpływu na baterię</span></li>
-        <li><span class="check">✓</span><span>Wypłata 1-go każdego miesiąca, Stripe Connect</span></li>
+        <li><span class="check">✓</span><span>Wypłata po cyklu rozliczeniowym przez Stripe Connect</span></li>
       </ul>
       <div class="audience-cta">
         <a href="kierowca.html" class="btn btn-amber">Zostań kierowcą →</a>
@@ -472,37 +470,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <span>v0.9.0-pilot · made in Warszawa</span>
   </div>
 </footer>
-
-<script>
-  const veh = document.getElementById('calc-vehicles');
-  const vLabel = document.getElementById('calc-v-label');
-  const districts = document.getElementById('calc-districts');
-  const outKm = document.getElementById('out-km');
-  const outImp = document.getElementById('out-imp');
-  const districtMult = [1.0, 0.85, 0.7, 1.4];
-
-  function update() {
-    const v = +veh.value;
-    const mult = districtMult[districts.selectedIndex] || 1;
-    const km = Math.round(v * 1550 * mult);
-    const imp = Math.round(km * 66.5);
-    const suf = v === 1 ? '' : v < 5 ? 'y' : 'ów';
-    vLabel.textContent = `${v} pojazd${suf}`;
-    outKm.textContent = km.toLocaleString('pl-PL') + ' km';
-    outImp.textContent = imp >= 1000 ? (imp / 1000).toFixed(0) + ' K' : imp.toString();
-  }
-
-  veh.addEventListener('input', update);
-  districts.addEventListener('change', update);
-  update();
-
-  document.querySelectorAll('.lang-toggle button').forEach(b => {
-    b.addEventListener('click', () => {
-      document.querySelectorAll('.lang-toggle button').forEach(x => x.classList.remove('active'));
-      b.classList.add('active');
-    });
-  });
-</script>
 
 </body>
 </html>
